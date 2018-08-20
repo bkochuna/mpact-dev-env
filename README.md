@@ -7,18 +7,18 @@ The installation creates the following directory structure:
 
 * \<install_dir>/
   * common_tools/
-    * autoconf-\<autoconf-version>/
-    * cmake-\<cmake-version>/
-    * gitdist/
+        * autoconf-\<autoconf-version>/
+        * cmake-\<cmake-version>/
+        * gitdist/
   * gcc-\<gcc-version>/
-    * load_dev_env.[sh,csh]
-    * toolset/
-      * gcc-\<gcc-version>/
-      * mpich-\<mpich-version>/
-    * tpls/
+        * load_dev_env.[sh,csh]
+        * tpls/
+        * toolset/
+            * gcc-\<gcc-version>/
+            * mpich-\<mpich-version>/
   * images/
-    * dev_env/
-    * install/
+        * dev_env/
+        * install/
 
     
 <b>Versioning</b>

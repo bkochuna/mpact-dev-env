@@ -803,7 +803,7 @@ def main(cmndLineArgs):
         gcc_module.write("#%module\n\n")
         gcc_module.write("set root " + dev_env_base_dir + "\n")
         gcc_module.write("set version gcc-" + gcc_version + "\n")
-        gcc_module.write("set tpldir " + dev_env_base_dir + "/tpls\n")
+        gcc_module.write("set tpldir " + compiler_toolset_base_dir + "/tpls\n")
         gcc_module.write('set name "MPACT Development Environment - $version"\n')
         gcc_module.write('set msg "Loads the development environment for MPACT."\n')
         gcc_module.write('proc ModulesHelp { } {\n')
@@ -930,14 +930,21 @@ def main(cmndLineArgs):
   else:
     print("Skipping install of the tools on request!")
 
+  ###
+  print("\n\nD) Final instructions for using installed dev env:")
+  ###
+
   if inOptions.skipOp:
     print("\n***")
     print("*** NOTE: --no-op provided, only traced actions that would have been taken!")
     print("***")
+  else:
+    os.system("mv load_dev_env.sh " + dev_env_dir)
+    os.system("mv load_dev_env.csh " + dev_env_dir)
 
   print("installing CMake target for vera_tpls")
   if not inOptions.skipOp and inOptions.doInstall:   
-    os.system("mkdir " + dev_env_base_dir + "/tpls")
+    os.system("mkdir " + compiler_toolset_base_dir + "/tpls")
     os.chdir(scratch_dir + "/..")
     os.system("git submodule init && git submodule update")
     if not os.path.exists(scratch_dir + "/tmp"):
@@ -945,18 +952,17 @@ def main(cmndLineArgs):
     os.chdir(scratch_dir + "/tmp")
     os.system("rm -rf *")
     os.system("module load mpi")
-    os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + dev_env_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../../vera_tpls/TPL_build')
+    os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../../vera_tpls/TPL_build')
     os.system("make -j8 || make -j8")
   else:
     print("git submodule init && git submodule update")
-    print('cmake  -D CMAKE_INSTALL_PREFIX=' + dev_env_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
+    print('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
     print("make -j8")
   if not inOptions.skipOp:
     if inOptions.build_image:
       print("building docker image")
       os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")  
   if inOptions.showFinalInstructions:
-    print("\n\nD) Final instructions for using installed dev env:")
     print("\nTo use the new dev env, just source the file:\n")
     print("  source " + dev_env_base_dir + "/env/load_dev_env.sh\n")
     print("for sh or bash shells (or load_dev_env.csh for csh shell).\n")

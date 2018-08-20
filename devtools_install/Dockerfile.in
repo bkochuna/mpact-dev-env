@@ -3,8 +3,6 @@ ARG NPROC=2
 ARG MKL_TRUE=@MKL_TRUE@
 WORKDIR /scratch
 ENV GCC_VERSION=gcc-@GCC_VERSION@ \
-GCC_FIRST=@GCC_FIRST@ \
-GCC_SHORT=@GCC_SHORT@ \
 PYTHON_3=/etc/modulefiles/python-anaconda3/3.6.4                \
 CMAKE=/etc/modulefiles/cmake/@CMAKE_VERSION@  \
 MPI_VERSION=@MPI_VERSION@  \

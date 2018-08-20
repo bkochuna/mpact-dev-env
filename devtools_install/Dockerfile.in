@@ -253,14 +253,13 @@ echo 'exit || exit' >> ${FINISH_BUILD} && \
 /bin/bash -i /scratch/finishBuild.sh && \
 yum install -y redhat-lsb rpm-build rpm-sign check dejagnu expect && \
 mkdir /scratch/buildGCC && cd /scratch/buildGCC && \
-git clone https://gitlab.com/BobSteagall/gcc-builder.git && \
-cd gcc-builder && \
-git checkout gcc@GCC_FIRST@ && \
-sed -i 's/GCC_VERSION=@GCC_FIRST@.X.0/GCC_VERSION=@GCC_VERSION@/g' gcc-build-vars.sh && \
-/bin/bash -i /scratch/buildGCC/gcc-builder/build-gcc.sh -T && \
-/bin/bash -i /scratch/buildGCC/gcc-builder/stage-gcc.sh && \
-/bin/bash -i /scratch/buildGCC/gcc-builder/pack-gcc.sh && \
-tar -zxvf ./packages/kewb-gcc@GCC_SHORT@-CentOS-7-x86_64.tgz -C / && \
-source /usr/local/bin/setenv-for-gcc@GCC_SHORT@.sh && \
-/bin/bash -i /scratch/buildGCC/gcc-builder/clean-gcc.sh && \
+wget https://ftp.gnu.org/gnu/gcc/gcc-@GCC_VERSION@/gcc-@GCC_VERSION@.tar.gz
+tar -xzf gcc-@GCC_VERSION@.tar.gz
+cd gcc-@GCC_VERSION@.tar.gz
+./contrib/download-prerequisites
+mkdir -p /usr/local/gcc/@GCC_VERSION@
+cd /usr/local/gcc/@GCC_VERSION@
+/scratch/buildGCC/gcc-@GCC_VERSION@/configure --disable-multilib --prefix=/usr/local/gcc/@GCC_VERSION@ --enable-languages=c,c++,fortran
+make -j8
+make install
 cd /scratch && rm -rf buildGCC && yum clean all

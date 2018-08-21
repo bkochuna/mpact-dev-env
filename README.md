@@ -5,31 +5,32 @@ This repository contains scripts to install the MPACT development environment in
 
 The installation creates the following directory structure:
 
-* \<install_dir>/
-  * common_tools/
-        * autoconf-\<autoconf-version>/
-        * cmake-\<cmake-version>/
-        * gitdist/
-  * gcc-\<gcc-version>/
-        * load_dev_env.[sh,csh]
-        * tpls/
-        * toolset/
-            * gcc-\<gcc-version>/
-            * mpich-\<mpich-version>/
-  * images/
-        * dev_env/
-        * install/
+<install-dir>/
+    ├── common_tools                     
+    │   ├── autoconf-<autoconf-version>
+    │   ├── cmake-<cmake-version>
+    │   ├── gitdist/
+    ├── gcc-<gcc-version>
+    │   ├── load_dev_env.[sh,csh]
+    │   ├── tpls/
+    │   ├── toolset/
+    │   │   ├── gcc-<gcc-version>/
+    │   │   ├── mpich-<mpich-version>/   
+    ├── images/
+    │   ├── dev_env/
+    └── └── install/
 
     
 <b>Quick Install Instructions</b>
 
 To install the default mpact-dev-env, run the following commands:
 
-1. git clone https://ners-arc-05.engin.umich.edu/MPACT/mpact-dev-env.git
-2. cd mpact-dev-env/devtools_install
-3. python install_devtools.py --install-dir=\<install dir> --do-all
-
-install_devtools.py creates the directory tree within <install dir>, downloads the necessary source code for all tools, and configures and installs them.
+```bash
+  $ git clone https://ners-arc-05.engin.umich.edu/MPACT/mpact-dev-env.git
+  $ cd mpact-dev-env/devtools_install
+  $ python install_devtools.py --install-dir=<install-dir> --do-all
+```
+install_devtools.py creates the directory tree within <install dir>, downloads the necessary source code for all tools, then configures and installs the tools.
 By default, this installs gcc-4.8.3, mpich-3.1.3, cmake-3.3.2, and autoconf-2.69, i.e, mpact-dev-env-1.0, per the versioning specified below.
 For more detailed installation instructions, including specifiying alternate software versions, run python install_devtools.py --help.
 
@@ -38,11 +39,11 @@ For more detailed installation instructions, including specifiying alternate sof
 
 mpact-dev-env-\<major_version>.\<minor_version>.\<patch>-tag
 
-Major version: incremented if TPLs or toolchain major version changes
+Major version: incremented for dev-envs containing TPL or tool with different major version than used in default
 
-Minor version: incremented if TPLs or toolchain minor version changes
+Minor version: incremented for dev-envs containing TPL or tool with different minor version than used in default
 
-Patch: incremented if TPLs or toolchain patch changes changes
+Patch: incremented for dev-envs containing TPL or tool with different patch than used in default
 
 Tag: set for any devations from major.minor.patch
 

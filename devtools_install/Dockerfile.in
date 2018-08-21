@@ -243,7 +243,7 @@ echo 'source activate Python27' >> ${FINISH_BUILD} && \
 echo 'module load cmake' >> ${FINISH_BUILD} && \
 echo 'mkdir /scratch/tmp && cd /scratch/tmp' >> ${FINISH_BUILD} && \
 echo 'module load mpi' >> ${FINISH_BUILD} && \
-echo 'cmake  -D CMAKE_INSTALL_PREFIX=/opt/mpact-dev-env/gcc-@GCC_VERSION@/tpls/  -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 @TPL_SOURCE_DIR@' >> ${FINISH_BUILD} && \
+echo 'cmake  -D CMAKE_INSTALL_PREFIX=/opt/mpact-dev-env/gcc-@GCC_VERSION@/tpls/  -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 /scratch/@TPL_SOURCE_DIR@' >> ${FINISH_BUILD} && \
 echo 'make -j8 || ' >> ${FINISH_BUILD} && \
 echo 'make -j8' >> ${FINISH_BUILD} && \
 echo 'cd /scratch && rm -rf tmp *_tpls TriBITS finishBuild.sh cmake-3.3.* && yum clean all' >> ${FINISH_BUILD} && \

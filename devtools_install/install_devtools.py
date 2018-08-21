@@ -789,7 +789,7 @@ def main(cmndLineArgs):
 
     if "gcc" in compilerToolsetSelectedSet:
       if gcc_version == "4.8.3":
-        installToolFromSource("gcc", gcc_version, compiler_tools_dir)
+        installToolFromSource("gcc", gcc_version, compiler_toolset_dir)
       else:
         print("unpacking gcc-" + gcc_version + ".tar.gz...")
         os.system("tar xzf gcc-" + gcc_version + ".tar.gz")

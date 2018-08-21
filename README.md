@@ -47,7 +47,7 @@ Minor version: incremented for dev-envs containing TPL or tool with different mi
 
 Patch: incremented for dev-envs containing TPL or tool with different patch than used in default
 
-Tag: set for any devations from major.minor.patch
+Tag: set for any deviations from major.minor.patch
 
 E.g, v1.0 would have gcc-4.8.3 and mpich-3.1.3, v2.0 would have gcc-5.4.0 and mpich-3.1.3, and v1.0-mvapich would have gcc-4.8.3 and mvapich2-2.3.
 

@@ -21,17 +21,32 @@ The installation creates the following directory structure:
         * install/
 
     
+<b>Quick Install Instructions</b>
+
+To install the default mpact-dev-env, run the following commands:
+
+1. git clone https://ners-arc-05.engin.umich.edu/MPACT/mpact-dev-env.git
+2. cd mpact-dev-env/devtools_install
+3. python install_devtools.py --install-dir=<install dir> --do-all
+
+install_devtools.py creates the directory tree within <install dir>, downloads the necessary source code for all tools, and configures and installs them.
+By default, this installs gcc-4.8.3, mpich-3.1.3, cmake-3.3.2, and autoconf-2.69, i.e, mpact-dev-env-1.0, per the versioning specified below.
+For additional installation details, including specifiying alternate software versions, run python install_devtools.py --help.
+
+    
 <b>Versioning</b>
 
 mpact-dev-env-\<major_version>.\<minor_version>.\<patch>-tag
 
-Major version: incremented if TPLs or toolchain changes
+Major version: incremented if TPLs or toolchain major version changes
 
-Minor version: incremented if toolchain changes
+Minor version: incremented if TPLs or toolchain minor version changes
 
-Patch: incremented if a TPL version changes
+Patch: incremented if TPLs or toolchain patch changes changes
 
 Tag: set for any devations from major.minor.patch
+
+E.g, v1.0 would have gcc-4.8.3 and mpich-3.1.3, v2.0 would have gcc-5.4.0 and mpich-3.1.3, and v1.0-mvapich would have gcc-4.8.3 and mvapich2-2.3.
 
 <b>Docker and SSH Information</b>
 

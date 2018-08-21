@@ -702,17 +702,21 @@ def main(cmndLineArgs):
           inOptions.sourceGitUrlBase, inOptions)
     for tool in compilerToolsetSelectedSet:
       if "gcc" in tool:
-        print("")
-        print("Downloading the source for gcc-" + gcc_version + " ...")
-        print("")
-        if not inOptions.skipOp:
-          try:
-            os.system("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
-          except:
-            print("Invalid gcc version passed. No Download link found.")
-            exit(1)
+        if gcc_version == "4.8.3":
+            downloadToolSource("gcc", gcc_version,
+            inOptions.sourceGitUrlBase, inOptions)
         else:
-          print("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
+            print("")
+            print("Downloading the source for gcc-" + gcc_version + " ...")
+            print("")
+            if not inOptions.skipOp:
+                try:
+                    os.system("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
+                except:
+                    print("Invalid gcc version passed. No Download link found.")
+                    exit(1)
+                else:
+                    print("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
 
       elif "mpich" in tool:
         if mpich_version == '3.1.3':
@@ -780,24 +784,27 @@ def main(cmndLineArgs):
         cmake_module.write(common_tools_dir + "cmake-$version/bin\n")
         cmake_module.close()
     if "autoconf" in commonToolsSelectedSet:
-      installToolFromSource("autoconf", autoconf_version_default,
+      installToolFromSource("autoconf", autoconf_version,
         common_tools_dir, None, inOptions )
 
     if "gcc" in compilerToolsetSelectedSet:
-      print("unpacking gcc-" + gcc_version + ".tar.gz...")
-      os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
-      os.chdir("gcc-" + gcc_version)
-      print("downloading gcc prerequisites...")
-      os.system("./contrib/download_prerequisites")      
-      os.chdir(compiler_toolset_dir)
-      os.system("mkdir gcc-" + gcc_version)
-      os.chdir("gcc-" + gcc_version)
-      print("configuring gcc...")
-      os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --disable-multilib --prefix=" + compiler_toolset_dir + "/gcc-" + gcc_version + " --enable-languages=c,c++,fortran")
-      print("building gcc...")
-      os.system("make -j8")
-      os.system("make install")
-      os.chdir(scratch_dir)
+      if gcc_version = "4.8.3"
+        installToolFromSource("gcc", gcc_version, compiler_tools_dir)
+      else:
+        print("unpacking gcc-" + gcc_version + ".tar.gz...")
+        os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
+        os.chdir("gcc-" + gcc_version)
+        print("downloading gcc prerequisites...")
+        os.system("./contrib/download_prerequisites")      
+        os.chdir(compiler_toolset_dir)
+        os.system("mkdir gcc-" + gcc_version)
+        os.chdir("gcc-" + gcc_version)
+        print("configuring gcc...")
+        os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --disable-multilib --prefix=" + compiler_toolset_dir + "/gcc-" + gcc_version + " --enable-languages=c,c++,fortran")
+        print("building gcc...")
+        os.system("make -j8")
+        os.system("make install")
+        os.chdir(scratch_dir)
       if not inOptions.skipOp:
         gcc_module = open(dev_env_dir + "/gcc-" + gcc_version, 'w+')
         gcc_module.write("#%module\n\n")

@@ -663,7 +663,7 @@ def main(cmndLineArgs):
       if chr != '.':
         gcc_short += chr
     if mvapichInstalled:
-      mpi_version = "mvapich2-" + mvapich_version
+      mpi_version = "mvapich2-2.0"
     else:
       mpi_version = "mpich-" + mpich_version
     if inOptions.mkl_true:

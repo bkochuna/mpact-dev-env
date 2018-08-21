@@ -260,4 +260,4 @@ cd /usr/local/gcc/@GCC_VERSION@ && \
 /scratch/buildGCC/gcc-@GCC_VERSION@/configure --disable-multilib --prefix=/usr/local/gcc/@GCC_VERSION@ --enable-languages=c,c++,fortran && \
 make -j8 && \
 make install && \
-cd /scratch && rm -rf buildGCC tmp vera_tpls MPACT_tpls TriBITS && yum clean all
+cd /scratch && rm -rf Anaconda* yes buildGCC tmp vera_tpls MPACT_tpls TriBITS && yum clean all

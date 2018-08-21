@@ -147,30 +147,30 @@ The informational arguments to this function are:
     default.  If this is not specified then it will abort.
 
   --source-git-url-base=<url_base>
-  
+
     Gives the base URL for to get the tool sources from.  The default is:
-  
+
       """+sourceGitUrlBase_default+"""
-  
+
     This is used to build the full git URL as:
-  
+
       <url_base><tool_name>-<tool_version>-base
-  
+
     This can also accommodate gitolite repos and other directory structures,
     for example, with:
-  
+
       git@<host-name>:prerequisites/
-  
+
   --common-tools=all
-  
+
     Specifies the tools to download and install under common_tools/.  One can
     pick specific tools with:
-  
+
       --common-tools=autoconf,cmake,...
-  
+
     This will download and install the default versions of these tools.  To
     select specific versions, use:
-  
+
       --common-tools=autoconf:"""+autoconf_version_default+""",cmake:"""+cmake_version_default+""",...
 
     The default is 'all'.  To install none of these, pass in empty:
@@ -184,19 +184,19 @@ The informational arguments to this function are:
     version of git and most systems will already have a current-enough version
     of git so there is no need to install one to be effective doing
     development.)
-  
+
   --compiler-toolset=all
-  
+
     Specifies GCC and MPICH (and other compiler-specific tools) to download
     and install under gcc-<gcc-version>/toolset/.  One can pick specific
     components with:
-  
+
       --compiler-toolset=gcc,mpich
-  
+
     or specific versions with:
-  
+
       --compiler-toolset=gcc:"""+gcc_version_default+""",mpich:"""+mpich_version_default+"""
-  
+
     Of course if one is only installing GCC with an existing installed MPICH,
     one will need to also reinstall MPICH as well.
 
@@ -208,11 +208,11 @@ The action arguments are:
 
   --initial-setup: Create <dev_env_base>/ directories and install
     load_dev_env.sh
-  
+
   --download: Download all of the requested tools
-  
+
   --install: Configure, build, and install all of the requested tools
-  
+
   --do-all: Do everything.  Implies --initial-setup --download --install
 
 To change modify the permissions of the installed files, see the options
@@ -235,6 +235,7 @@ NOTE: The actual tool installs are performed using the scripts:
 * install-git.py
 * install-mpich.py
 * install-openmpi.py
+* install-mvapich.py
 
 More information about what versions are installed, how they are installed,
 etc. is found in these scripts.  Note that some of these scripts apply patches
@@ -247,7 +248,7 @@ scripts and look at the implementation of these scripts.
 def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
 
   from optparse import OptionParser
-  
+
   clp = OptionParser(usage=usageHelp)
   clp.add_option(
     "--install-dir", dest="installDir", type="string", default="",
@@ -291,7 +292,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
   clp.add_option(
     "--no-op", dest="skipOp", action="store_true", default=False,
     help="Skip all of the requested actions and just print what would be done.")
-    
+
   clp.add_option(
     "--show-defaults", dest="showDefaults", action="store_true", default=False,
     help="[ACTION] Show the defaults and exit." )
@@ -312,7 +313,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
     "--install", dest="doInstall", action="store_true", default=False,
     help="[ACTION] Configure, build, and install all of the tools specified by" \
       " --common-tools and --compiler-toolset.")
-    
+
   clp.add_option(
     "--show-final-instructions", dest="showFinalInstructions", action="store_true",
     default=False,
@@ -462,7 +463,7 @@ def writeLoadDevEnvFiles(devEnvBaseDir, devEnvDir, inOptions, versionList, mvapi
   else:
     subPairArray.append(("@MPICH_VERSION@", versionList["mpich"])),
 
-    
+
 
   load_dev_env_base = inOptions.loadDevEnvFileBaseName
 
@@ -575,7 +576,7 @@ def main(cmndLineArgs):
     elif "mvapich" in toolName and ':' in toolName:
       mvapich_version = toolName.split(':')[1]
       mvapichInstalled = True
-      
+  
   versionList["cmake"] = cmake_version
   versionList["autoconf"] = autoconf_version
   versionList["gcc"] = gcc_version
@@ -585,7 +586,7 @@ def main(cmndLineArgs):
     print("\n***")
     print("*** NOTE: --no-op provided, will only trace actions and not touch the filesystem!")
     print("***\n")
-  
+
   commonToolsSelected = \
     getToolsSelectedArray(inOptions.commonTools, commonToolsArray)
   print("\nSelected common tools = " + str(commonToolsSelected))
@@ -854,7 +855,7 @@ def main(cmndLineArgs):
         gcc_module.write("set-alias gitdist-status     {gitdist dist-repo-status}\n")
         gcc_module.write("set-alias gitdist-mod        {gitdist --dist-mod-only}\n")
         gcc_module.close()
-        
+
     if "mpich" in compilerToolsetSelectedSet:
       gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:

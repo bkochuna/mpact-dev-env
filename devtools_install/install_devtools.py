@@ -122,7 +122,7 @@ The download and install of each of these tools is drive by its own
 install-<toolname>.py script in the same directory as install-devtools.py.
 
 Before running this script, some version of a C and C++ compiler must already
-be installed on the system.  
+be installed on the system.
 
 At a high level, this script performs the following actions.
 
@@ -241,7 +241,7 @@ More information about what versions are installed, how they are installed,
 etc. is found in these scripts.  Note that some of these scripts apply patches
 for certain versions.  For details, look at the --help output from these
 scripts and look at the implementation of these scripts.
-"""        
+"""
 
 
 # Get and process command-line arguments
@@ -330,7 +330,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
 
   (options, args) = clp.parse_args(args=cmndLineArgs)
 
-  # NOTE: Above, in the pairs of boolean options, the *last* add_option(...) 
+  # NOTE: Above, in the pairs of boolean options, the *last* add_option(...)
   # takes effect!  That is why the commands are ordered the way they are!
 
   #
@@ -570,13 +570,13 @@ def main(cmndLineArgs):
       autoconf_version = toolName.split(':')[1]
   for toolName in inOptions.compilerToolset.split(','):
     if "gcc" in toolName and ':' in toolName:
-      gcc_version = toolName.split(':')[1]      
+      gcc_version = toolName.split(':')[1]
     elif "mpich" in toolName and ':' in toolName:
-      mpich_version = toolName.split(':')[1]      
+      mpich_version = toolName.split(':')[1]
     elif "mvapich" in toolName and ':' in toolName:
       mvapich_version = toolName.split(':')[1]
       mvapichInstalled = True
-  
+
   versionList["cmake"] = cmake_version
   versionList["autoconf"] = autoconf_version
   versionList["gcc"] = gcc_version
@@ -796,7 +796,7 @@ def main(cmndLineArgs):
         os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
         os.chdir("gcc-" + gcc_version)
         print("downloading gcc prerequisites...")
-        os.system("./contrib/download_prerequisites")      
+        os.system("./contrib/download_prerequisites")
         os.chdir(compiler_toolset_dir)
         os.system("mkdir gcc-" + gcc_version)
         os.chdir("gcc-" + gcc_version)
@@ -860,7 +860,7 @@ def main(cmndLineArgs):
       gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
         raise Exception("Error, gcc has not been installed yet." \
-          "  Missing directory '"+gccInstallDir+"'") 
+          "  Missing directory '"+gccInstallDir+"'")
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       if mpich_version == "3.1.3":
         installToolFromSource(
@@ -878,7 +878,7 @@ def main(cmndLineArgs):
       else:
         os.system("tar xfz mpich-" + mpich_version + ".tar.gz")
         os.system("mkdir -p " + compiler_toolset_dir + "/mpich-" + mpich_version)
-        os.system("mkdir tmp") 
+        os.system("mkdir tmp")
         os.chdir("tmp")
         os.system("../mpich-" + mpich_version +  "/configure -prefix=" + compiler_toolset_dir + "/mpich-" + mpich_version)
         os.system("make")
@@ -907,7 +907,7 @@ def main(cmndLineArgs):
       gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
         raise Exception("Error, gcc has not been installed yet." \
-          "  Missing directory '"+gccInstallDir+"'") 
+          "  Missing directory '"+gccInstallDir+"'")
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       mvapichDir = gccInstallDir + "/toolset/mvapich-" + mvapich_version
       if not inOptions.skipOp:
@@ -951,7 +951,7 @@ def main(cmndLineArgs):
     os.system("mv load_dev_env.csh " + dev_env_dir)
 
   print("installing CMake target for vera_tpls")
-  if not inOptions.skipOp and inOptions.doInstall:   
+  if not inOptions.skipOp and inOptions.doInstall:
     os.system("mkdir " + compiler_toolset_base_dir + "/tpls")
     os.chdir(scratch_dir + "/..")
     os.system("git submodule init && git submodule update")
@@ -969,7 +969,7 @@ def main(cmndLineArgs):
   if not inOptions.skipOp:
     if inOptions.build_image:
       print("building docker image")
-      os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")  
+      os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")
   if inOptions.showFinalInstructions:
     print("\nTo use the new dev env, just source the file:\n")
     print("  source " + dev_env_base_dir + "/env/load_dev_env.sh\n")

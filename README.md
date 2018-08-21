@@ -5,8 +5,8 @@ This repository contains scripts to install the MPACT development environment in
 
 The installation creates the following directory structure:
 
-<install-dir>/
-    ├── common_tools                     
+    <install-dir>/
+    ├── common_tools                      
     │   ├── autoconf-<autoconf-version>
     │   ├── cmake-<cmake-version>
     │   ├── gitdist/
@@ -19,6 +19,8 @@ The installation creates the following directory structure:
     ├── images/
     │   ├── dev_env/
     └── └── install/
+
+
 
     
 <b>Quick Install Instructions</b>

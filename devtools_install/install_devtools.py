@@ -88,7 +88,7 @@ directory with::
 
 and then run:
 
-  install-devtools.py --install-dir=<dev_env_base> \
+  python install-devtools.py --install-dir=<install_dir> \
    --parallel=<num-procs> --do-all
 
 By default, this installs the following tools in the dev env install
@@ -156,7 +156,7 @@ The informational arguments to this function are:
   
       <url_base><tool_name>-<tool_version>-base
   
-    This can also accomidate gitolite repos and other directory structures,
+    This can also accommodate gitolite repos and other directory structures,
     for example, with:
   
       git@<host-name>:prerequisites/
@@ -189,7 +189,7 @@ The informational arguments to this function are:
   
     Specifies GCC and MPICH (and other compiler-specific tools) to download
     and install under gcc-<gcc-version>/toolset/.  One can pick specific
-    componets with:
+    components with:
   
       --compiler-toolset=gcc,mpich
   
@@ -204,7 +204,7 @@ The informational arguments to this function are:
 
       --compiler-toolset=''
 
-The action argumnets are:
+The action arguments are:
 
   --initial-setup: Create <dev_env_base>/ directories and install
     load_dev_env.sh
@@ -213,7 +213,7 @@ The action argumnets are:
   
   --install: Configure, build, and install all of the requested tools
   
-  --do-all: Do everything.  Implies --initial-setup --downlaod --install
+  --do-all: Do everything.  Implies --initial-setup --download --install
 
 To change modify the permissions of the installed files, see the options
 --install-owner, --install-group, and --install-for-all.
@@ -239,7 +239,7 @@ NOTE: The actual tool installs are performed using the scripts:
 More information about what versions are installed, how they are installed,
 etc. is found in these scripts.  Note that some of these scripts apply patches
 for certain versions.  For details, look at the --help output from these
-scripts and look at the implementaion of these scripts.
+scripts and look at the implementation of these scripts.
 """        
 
 

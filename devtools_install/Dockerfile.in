@@ -234,7 +234,7 @@ echo "prepend-path PATH /usr/local/gcc/@GCC_VERSION@/bin" >> ${GCC_VERSION} && \
 echo "prepend-path LD_LIBRARY_PATH /usr/local/gcc/@GCC_VERSION@/lib:/usr/local/gcc/@GCC_VERSION@/lib64" >> ${GCC_VERSION} && \
 sed -i 's/set name MPACT Development Environment - $version/set name "MPACT Development Environment -$version"/g' gcc-@GCC_VERSION@ && \
 sed -i 's/Loads the development environment for MPACT./"Loads the development environment for MPACT."/g' gcc-@GCC_VERSION@ && \
-rm -f *GCC* && \
+rm -rf *GCC* && \
 touch /scratch/finishBuild.sh && \ 
 chmod 755 /scratch/finishBuild.sh && \ 
 echo '#!/bin/bash' >> ${FINISH_BUILD} && \ 
@@ -260,4 +260,4 @@ cd /usr/local/gcc/@GCC_VERSION@ && \
 /scratch/buildGCC/gcc-@GCC_VERSION@/configure --disable-multilib --prefix=/usr/local/gcc/@GCC_VERSION@ --enable-languages=c,c++,fortran && \
 make -j8 && \
 make install && \
-cd /scratch && rm -rf buildGCC && yum clean all
+cd /scratch && rm -rf buildGCC tmp vera_tpls MPACT_tpls TriBITS && yum clean all

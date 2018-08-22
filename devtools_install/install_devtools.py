@@ -659,11 +659,6 @@ def main(cmndLineArgs):
     os.system("mkdir " + dev_env_base_dir + "/images")
     os.system("mkdir " + dev_env_base_dir + "/images/dev_env")
     os.system("mkdir " + dev_env_base_dir + "/images/install")
-    gcc_first = gcc_version[0]
-    gcc_short = str()
-    for chr in gcc_version:
-      if chr != '.':
-        gcc_short += chr
     if mvapichInstalled:
       mpi_version = "mvapich2-2.0"
     else:
@@ -760,19 +755,20 @@ def main(cmndLineArgs):
   if inOptions.doInstall:
     if "gitdist" in commonToolsSelectedSet:
       print("\nInstalling gitdist ...")
-      echoRunSysCmnd("cp "+pythonUtilsDir+"/gitdist "+common_tools_dir+"/")
-      InstallProgramDriver.fixupInstallPermissions(inOptions, common_tools_dir)
+      if not inOptions.skipOp:
+        echoRunSysCmnd("cp "+pythonUtilsDir+"/gitdist "+common_tools_dir+"/")
+        InstallProgramDriver.fixupInstallPermissions(inOptions, common_tools_dir)
 
     if "cmake" in commonToolsSelectedSet:
-      os.system("tar -xf " + common_tools_dir + "/cmake-" + cmake_version + ".tar.gz")
-      os.system("mv -f cmake-" + cmake_version + " " + common_tools_dir)
-      os.system("yum install openssl-devel")
       if not inOptions.skipOp:
+        os.system("tar -xf " + common_tools_dir + "/cmake-" + cmake_version + ".tar.gz")
+        os.system("mv -f cmake-" + cmake_version + " " + common_tools_dir)
+        os.system("yum install openssl-devel")
         try:
           os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         except:
           os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
-        os.system("make -j" + parallelLevel + " install")
+        os.system("make -j" + numProcs + " install")
         os.system("cd ..")
         cmake_module = open(dev_env_dir + "/cmake-" + cmake_version, 'w+')
         cmake_module.write("#%Module\n\n")
@@ -785,14 +781,19 @@ def main(cmndLineArgs):
         cmake_module.write("module-whatis $msg\n")
         cmake_module.write(common_tools_dir + "cmake-$version/bin\n")
         cmake_module.close()
-    if "autoconf" in commonToolsSelectedSet:
-      installToolFromSource("autoconf", autoconf_version,
-        common_tools_dir, None, inOptions )
+      else:
+        print("tar -xf " + common_tools_dir + "/cmake-" + cmake_version + ".tar.gz")
+        print("mv -f cmake-" + cmake_version + " " + common_tools_dir)
+        print("yum install openssl-devel")
+        print("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
+      if "autoconf" in commonToolsSelectedSet:
+        installToolFromSource("autoconf", autoconf_version,
+                              common_tools_dir, None, inOptions )
 
     if "gcc" in compilerToolsetSelectedSet:
       if gcc_version == "4.8.3":
         installToolFromSource("gcc", gcc_version, compiler_toolset_dir, None, inOptions)
-      else:
+      elif not inOptions.skipOp:
         print("unpacking gcc-" + gcc_version + ".tar.gz...")
         os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
         os.chdir("gcc-" + gcc_version)
@@ -804,9 +805,20 @@ def main(cmndLineArgs):
         print("configuring gcc...")
         os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --disable-multilib --prefix=" + compiler_toolset_dir + "/gcc-" + gcc_version + " --enable-languages=c,c++,fortran")
         print("building gcc...")
-        os.system("make -j" + parallelLevel)
+        os.system("make -j" + numProcs)
         os.system("make install")
         os.chdir(scratch_dir)
+      else:
+        print("unpacking gcc-" + gcc_version + ".tar.gz...")
+        print("tar xzf gcc-" + gcc_version + ".tar.gz")
+        print("downloading gcc prerequisites...")
+        print("./contrib/download_prerequisites")
+        print("mkdir gcc-" + gcc_version)
+        print("configuring gcc...")
+        print(scratch_dir + "/gcc-" + gcc_version + "/configure --disable-multilib --prefix=" + compiler_toolset_dir + "/gcc-" + gcc_version + " --enable-languages=c,c++,fortran")
+        print("building gcc...")
+        print("make -j" + numProcs)
+        print("make install")
       if not inOptions.skipOp:
         gcc_module = open(dev_env_dir + "/gcc-" + gcc_version, 'w+')
         gcc_module.write("#%module\n\n")
@@ -916,7 +928,7 @@ def main(cmndLineArgs):
         os.system("gzip -dc mvapich2-" + mvapich_version + ".tar.gz | tar -x")
         os.chdir("mvapich2-" + mvapich_version)
         os.system("./configure --prefix " + mvapichDir)
-        os.system("make -j" + parallelLevel)
+        os.system("make -j" + numProcs)
         os.system("make install")
         mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
         mvapich_module.write("conflict mpich\n")
@@ -962,11 +974,11 @@ def main(cmndLineArgs):
     os.system("rm -rf *")
     os.system("module load mpi")
     os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../../vera_tpls/TPL_build')
-    os.system("make -j" + parallelLevel + " || make -j" + parallelLevel)
+    os.system("make -j" + numProcs + " || make -j" + numProcs)
   else:
     print("git submodule init && git submodule update")
     print('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
-    print("make -j" + parallelLevel)
+    print("make -j" + numProcs)
   if not inOptions.skipOp:
     if inOptions.build_image:
       print("building docker image")

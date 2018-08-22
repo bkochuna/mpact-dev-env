@@ -562,6 +562,7 @@ def main(cmndLineArgs):
   #iterates over tools selected. If name is specified and a ':' is present, non-default version was specified. Updating install version to specified value
   #if no version was specified, default version will be installed
   inOptions = getCmndLineOptions(cmndLineArgs)
+  numProcs = inOptions.parallelLevel
   versionList = dict()
   for toolName in inOptions.commonTools.split(','):
     if "cmake" in toolName and ':' in toolName:
@@ -771,7 +772,7 @@ def main(cmndLineArgs):
           os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         except:
           os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
-        os.system("make -j8 install")
+        os.system("make -j" + parallelLevel + " install")
         os.system("cd ..")
         cmake_module = open(dev_env_dir + "/cmake-" + cmake_version, 'w+')
         cmake_module.write("#%Module\n\n")
@@ -803,7 +804,7 @@ def main(cmndLineArgs):
         print("configuring gcc...")
         os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --disable-multilib --prefix=" + compiler_toolset_dir + "/gcc-" + gcc_version + " --enable-languages=c,c++,fortran")
         print("building gcc...")
-        os.system("make -j8")
+        os.system("make -j" + parallelLevel)
         os.system("make install")
         os.chdir(scratch_dir)
       if not inOptions.skipOp:
@@ -915,7 +916,7 @@ def main(cmndLineArgs):
         os.system("gzip -dc mvapich2-" + mvapich_version + ".tar.gz | tar -x")
         os.chdir("mvapich2-" + mvapich_version)
         os.system("./configure --prefix " + mvapichDir)
-        os.system("make -j8")
+        os.system("make -j" + parallelLevel)
         os.system("make install")
         mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
         mvapich_module.write("conflict mpich\n")
@@ -961,11 +962,11 @@ def main(cmndLineArgs):
     os.system("rm -rf *")
     os.system("module load mpi")
     os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../../vera_tpls/TPL_build')
-    os.system("make -j8 || make -j8")
+    os.system("make -j" + parallelLevel + " || make -j" + parallelLevel)
   else:
     print("git submodule init && git submodule update")
     print('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
-    print("make -j8")
+    print("make -j" + parallelLevel)
   if not inOptions.skipOp:
     if inOptions.build_image:
       print("building docker image")

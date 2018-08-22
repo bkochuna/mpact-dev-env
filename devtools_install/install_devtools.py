@@ -799,6 +799,7 @@ def main(cmndLineArgs):
         os.chdir("gcc-" + gcc_version)
         print("downloading gcc prerequisites...")
         os.system("./contrib/download_prerequisites")
+        os.system("sed -i 's/m4-not-needed/m4/g' gmp/configure*")
         os.chdir(compiler_toolset_dir)
         os.system("mkdir gcc-" + gcc_version)
         os.chdir("gcc-" + gcc_version)

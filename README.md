@@ -15,7 +15,7 @@ The installation creates the following directory structure:
     │   ├── tpls/
     │   ├── toolset/
     │   │   ├── gcc-<gcc-version>/
-    │   │   ├── mpich-<mpich-version>/   
+    │   │   ├── <mpi>-<mpi-version>/   
     ├── images/
     │   ├── dev_env/
     └── └── install/

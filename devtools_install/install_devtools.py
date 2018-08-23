@@ -950,6 +950,7 @@ def main(cmndLineArgs):
     os.chdir(scratch_dir + "/tmp")
     os.system("rm -rf *")
     os.system("module load mpi")
+    os.system("unset HDF5_ROOT BLAS_ROOT LAPACK_DIR HYPRE_DIR PETSC_DIR SLEPC_DIR SUNDIALS_DIR")
     os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../../vera_tpls/TPL_build')
     os.system("make -j8 || make -j8")
   else:

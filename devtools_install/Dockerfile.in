@@ -1,7 +1,7 @@
 FROM centos:7
 ARG NPROC=2
 ARG MKL_TRUE=@MKL_TRUE@
-ARG gccVersion = @GCC_VERSION@
+ARG gccVersion=@GCC_VERSION@
 WORKDIR /scratch
 ENV GCC_VERSION=gcc-@GCC_VERSION@ \
 PYTHON_3=/etc/modulefiles/python-anaconda3/3.6.4                \

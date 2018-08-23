@@ -257,7 +257,7 @@ then \
     wget https://ftp.gnu.org/gnu/gcc/gcc-@GCC_VERSION@/gcc-@GCC_VERSION@.tar.gz && \
     tar -xzf gcc-@GCC_VERSION@.tar.gz && \
     cd gcc-@GCC_VERSION@ && \
-    /scratch/buildGCC/gcc-@GCC_VERSION@/contrib/download-prerequisites & \
+    /scratch/buildGCC/gcc-@GCC_VERSION@/contrib/download_prerequisites & \
     mkdir -p /usr/local/gcc/@GCC_VERSION@ && \
     cd /usr/local/gcc/@GCC_VERSION@ && \
     /scratch/buildGCC/gcc-@GCC_VERSION@/configure --disable-multilib --prefix=/usr/local/gcc/@GCC_VERSION@ --enable-languages=c,c++,fortran && \

@@ -35,6 +35,15 @@ export LD_LIBRARY_PATH=${TRIBITS_DEV_ENV_MVAPICH_DIR}/lib:$LD_LIBRARY_PATH
 
 setenv LOADED_TRIBITS_DEV_ENV $TRIBITS_DEV_ENV_GCC_VERSION
 
+# B.4) TPLS
+export HDF5_ROOT=${TRIBITS_DEV_ENV_COMPILER_BASE}/tpls/hdf5-1.8.10
+export BLAS_ROOT=${TRIBITS_DEV_ENV_COMPILER_BASE}/tpls/lapack-3.3.1
+export LAPACK_DIR=${TRIBITS_DEV_ENV_COMPILER_BASE}/tpls/lapack-3.3.1
+export HYPRE_DIR=${TRIBITS_DEV_ENV_COMPILER_BASE}/tpls/hypre-2.9.1a
+export PETSC_DIR=${TRIBITS_DEV_ENV_COMPILER_BASE}/tpls/petsc-3.5.4
+export SLEPC_DIR=${TRIBITS_DEV_ENV_COMPILER_BASE}/tpls/slepc-3.5.4
+export SUNDIALS_DIR=${TRIBITS_DEV_ENV_COMPILER_BASE}/tpls/sundials-2.9.0
+
 # Shortcut for gitdist dist-repo-status and --dist-mod-only
 alias gitdist-status="gitdist dist-repo-status"
 alias gitdist-mod="gitdist --dist-mod-only"

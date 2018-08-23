@@ -1,6 +1,7 @@
 FROM centos:7
 ARG NPROC=2
 ARG MKL_TRUE=@MKL_TRUE@
+ARG gccVersion = @GCC_VERSION@
 WORKDIR /scratch
 ENV GCC_VERSION=gcc-@GCC_VERSION@ \
 PYTHON_3=/etc/modulefiles/python-anaconda3/3.6.4                \
@@ -249,15 +250,18 @@ echo 'make -j8' >> ${FINISH_BUILD} && \
 echo 'cd /scratch && rm -rf tmp *_tpls TriBITS finishBuild.sh cmake-3.3.* && yum clean all' >> ${FINISH_BUILD} && \
 echo 'exit || exit' >> ${FINISH_BUILD} && \
 /bin/bash -i /scratch/finishBuild.sh && \
-yum install -y redhat-lsb rpm-build rpm-sign check dejagnu expect && \
-mkdir /scratch/buildGCC && cd /scratch/buildGCC && \
-wget https://ftp.gnu.org/gnu/gcc/gcc-@GCC_VERSION@/gcc-@GCC_VERSION@.tar.gz && \
-tar -xzf gcc-@GCC_VERSION@.tar.gz && \
-cd gcc-@GCC_VERSION@ && \
-/scratch/buildGCC/gcc-@GCC_VERSION@/contrib/download-prerequisites & \
-mkdir -p /usr/local/gcc/@GCC_VERSION@ && \
-cd /usr/local/gcc/@GCC_VERSION@ && \
-/scratch/buildGCC/gcc-@GCC_VERSION@/configure --disable-multilib --prefix=/usr/local/gcc/@GCC_VERSION@ --enable-languages=c,c++,fortran && \
-make -j8 && \
-make install && \
+if [ "x$gccVersion" != "4.8.5" ] ; \
+then \
+    yum install -y redhat-lsb rpm-build rpm-sign check dejagnu expect && \
+    mkdir /scratch/buildGCC && cd /scratch/buildGCC && \
+    wget https://ftp.gnu.org/gnu/gcc/gcc-@GCC_VERSION@/gcc-@GCC_VERSION@.tar.gz && \
+    tar -xzf gcc-@GCC_VERSION@.tar.gz && \
+    cd gcc-@GCC_VERSION@ && \
+    /scratch/buildGCC/gcc-@GCC_VERSION@/contrib/download_prerequisites && \
+    mkdir -p /usr/local/gcc/@GCC_VERSION@ && \
+    cd /usr/local/gcc/@GCC_VERSION@ && \
+    /scratch/buildGCC/gcc-@GCC_VERSION@/configure --disable-multilib --prefix=/usr/local/gcc/@GCC_VERSION@ --enable-languages=c,c++,fortran && \
+    make -j8 && \
+    make install; \
+fi && \
 cd /scratch && rm -rf Anaconda* yes buildGCC tmp vera_tpls MPACT_tpls TriBITS && yum clean all

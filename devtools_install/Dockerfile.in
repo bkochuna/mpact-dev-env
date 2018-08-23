@@ -1,5 +1,6 @@
 FROM centos:7
 ARG NPROC=2
+ARG MVAPICH_INSTALLED=@MVAPICH_INSTALLED@
 ARG MKL_TRUE=@MKL_TRUE@
 ARG gccVersion=@GCC_VERSION@
 WORKDIR /scratch
@@ -17,12 +18,31 @@ yum-config-manager --add-repo https://yum.repos.intel.com/setup/intelproducts.re
 rpm --import https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB && \ 
 yes | yum repolist && \ 
 yum install -y intel-mkl && \ 
+yum install -y wget && \
 yum group install "Development Tools" -y            		&&  \ 
 yum install valgrind cmake htop environment-modules -y &&  \ 
 yum install latexmk doxygen-latex texlive-titling texinfo texlive-titlesec -y 		&&  \ 
 yum install libXext-devel -y						&&  \ 
 yum install python papi-devel -y						&&  \ 
-yum install @MPI_VERSION@-devel -y						&&  \ 
+yum install gcc-c++ && \
+if [ "$MVAPICH_INSTALLED" != "True" ] ; \
+	then wget http://www.mpich.org/static/downloads/@MPI_VERSION@/mpich-@MPI_VERSION@.tar.gz && \
+	tar xfz mpich-@MPI_VERSION@.tar.gz && \
+	mkdir -p /usr/lib64/mpich-@MPI_VERSION@-x86_64 && \
+	mkdir tmp && cd tmp && \
+	../mpich-@MPI_VERSION@/configure -prefix=/usr/lib64/mpich-@MPI_VERSION@-x86_64 && \
+	make && make install && \
+	cd .. && rm -rm tmp; \
+fi && \
+if [ "$MVAPICH_INSTALLED" = "True" ] ; \
+	then wget http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/mvapich2-@MPI_VERSION@.tar.gz && \
+	yum install libibverbs && \
+	gzip -dc mvapich2-@MPI_VERSION@.tar.gz | tar -x && \
+	cd mvapich2-@MPI_VERSION@ && \
+	./configure --prefix=/usr/share/man/mvapich2-x86_64 && \
+	make -j8 && make install && \
+	cd .. ; \
+fi && \
 yum install hwloc-devel.x86_64	-y					&&  \ 
 yum install libibmad-devel.x86_64 -y					&&  \ 
 yum install -y valgrind cmake graphviz \ 

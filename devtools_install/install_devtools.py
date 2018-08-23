@@ -88,7 +88,7 @@ directory with::
 
 and then run:
 
-  python install-devtools.py --install-dir=<install_dir> \
+  install-devtools.py --install-dir=<dev_env_base> \
    --parallel=<num-procs> --do-all
 
 By default, this installs the following tools in the dev env install
@@ -122,7 +122,7 @@ The download and install of each of these tools is drive by its own
 install-<toolname>.py script in the same directory as install-devtools.py.
 
 Before running this script, some version of a C and C++ compiler must already
-be installed on the system.
+be installed on the system.  
 
 At a high level, this script performs the following actions.
 
@@ -147,30 +147,30 @@ The informational arguments to this function are:
     default.  If this is not specified then it will abort.
 
   --source-git-url-base=<url_base>
-
+  
     Gives the base URL for to get the tool sources from.  The default is:
-
+  
       """+sourceGitUrlBase_default+"""
-
+  
     This is used to build the full git URL as:
-
+  
       <url_base><tool_name>-<tool_version>-base
-
-    This can also accommodate gitolite repos and other directory structures,
+  
+    This can also accomidate gitolite repos and other directory structures,
     for example, with:
-
+  
       git@<host-name>:prerequisites/
-
+  
   --common-tools=all
-
+  
     Specifies the tools to download and install under common_tools/.  One can
     pick specific tools with:
-
+  
       --common-tools=autoconf,cmake,...
-
+  
     This will download and install the default versions of these tools.  To
     select specific versions, use:
-
+  
       --common-tools=autoconf:"""+autoconf_version_default+""",cmake:"""+cmake_version_default+""",...
 
     The default is 'all'.  To install none of these, pass in empty:
@@ -184,19 +184,19 @@ The informational arguments to this function are:
     version of git and most systems will already have a current-enough version
     of git so there is no need to install one to be effective doing
     development.)
-
+  
   --compiler-toolset=all
-
+  
     Specifies GCC and MPICH (and other compiler-specific tools) to download
     and install under gcc-<gcc-version>/toolset/.  One can pick specific
-    components with:
-
+    componets with:
+  
       --compiler-toolset=gcc,mpich
-
+  
     or specific versions with:
-
+  
       --compiler-toolset=gcc:"""+gcc_version_default+""",mpich:"""+mpich_version_default+"""
-
+  
     Of course if one is only installing GCC with an existing installed MPICH,
     one will need to also reinstall MPICH as well.
 
@@ -204,16 +204,16 @@ The informational arguments to this function are:
 
       --compiler-toolset=''
 
-The action arguments are:
+The action argumnets are:
 
   --initial-setup: Create <dev_env_base>/ directories and install
     load_dev_env.sh
-
+  
   --download: Download all of the requested tools
-
+  
   --install: Configure, build, and install all of the requested tools
-
-  --do-all: Do everything.  Implies --initial-setup --download --install
+  
+  --do-all: Do everything.  Implies --initial-setup --downlaod --install
 
 To change modify the permissions of the installed files, see the options
 --install-owner, --install-group, and --install-for-all.
@@ -235,20 +235,19 @@ NOTE: The actual tool installs are performed using the scripts:
 * install-git.py
 * install-mpich.py
 * install-openmpi.py
-* install-mvapich.py
 
 More information about what versions are installed, how they are installed,
 etc. is found in these scripts.  Note that some of these scripts apply patches
 for certain versions.  For details, look at the --help output from these
-scripts and look at the implementation of these scripts.
-"""
+scripts and look at the implementaion of these scripts.
+"""        
 
 
 # Get and process command-line arguments
 def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
 
   from optparse import OptionParser
-
+  
   clp = OptionParser(usage=usageHelp)
   clp.add_option(
     "--install-dir", dest="installDir", type="string", default="",
@@ -292,7 +291,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
   clp.add_option(
     "--no-op", dest="skipOp", action="store_true", default=False,
     help="Skip all of the requested actions and just print what would be done.")
-
+    
   clp.add_option(
     "--show-defaults", dest="showDefaults", action="store_true", default=False,
     help="[ACTION] Show the defaults and exit." )
@@ -313,7 +312,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
     "--install", dest="doInstall", action="store_true", default=False,
     help="[ACTION] Configure, build, and install all of the tools specified by" \
       " --common-tools and --compiler-toolset.")
-
+    
   clp.add_option(
     "--show-final-instructions", dest="showFinalInstructions", action="store_true",
     default=False,
@@ -330,7 +329,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
 
   (options, args) = clp.parse_args(args=cmndLineArgs)
 
-  # NOTE: Above, in the pairs of boolean options, the *last* add_option(...)
+  # NOTE: Above, in the pairs of boolean options, the *last* add_option(...) 
   # takes effect!  That is why the commands are ordered the way they are!
 
   #
@@ -462,8 +461,7 @@ def writeLoadDevEnvFiles(devEnvBaseDir, devEnvDir, inOptions, versionList, mvapi
     subPairArray.append(("@MVAPICH_VERSION@", versionList["mvapich"]))
   else:
     subPairArray.append(("@MPICH_VERSION@", versionList["mpich"])),
-
-
+   
 
   load_dev_env_base = inOptions.loadDevEnvFileBaseName
 
@@ -477,6 +475,12 @@ def writeLoadDevEnvFiles(devEnvBaseDir, devEnvDir, inOptions, versionList, mvapi
     os.path.join(devtools_install_dir, "load_dev_env.csh.in"),
     subPairArray,
     os.path.join(devEnvDir, load_dev_env_base+".csh")
+    )
+  modulePathPairArray =[("@DEV_ENV_DIR@", devEnvDir)]
+  configureFile(
+    os.path.join(devtools_install_dir, "append_modulepath.sh.in"),
+    modulePathPairArray,
+    os.path.join(devEnvDir, "append_modulepath.sh")
     )
 
 
@@ -562,7 +566,6 @@ def main(cmndLineArgs):
   #iterates over tools selected. If name is specified and a ':' is present, non-default version was specified. Updating install version to specified value
   #if no version was specified, default version will be installed
   inOptions = getCmndLineOptions(cmndLineArgs)
-  numProcs = inOptions.parallelLevel
   versionList = dict()
   for toolName in inOptions.commonTools.split(','):
     if "cmake" in toolName and ':' in toolName:
@@ -571,13 +574,13 @@ def main(cmndLineArgs):
       autoconf_version = toolName.split(':')[1]
   for toolName in inOptions.compilerToolset.split(','):
     if "gcc" in toolName and ':' in toolName:
-      gcc_version = toolName.split(':')[1]
+      gcc_version = toolName.split(':')[1]      
     elif "mpich" in toolName and ':' in toolName:
-      mpich_version = toolName.split(':')[1]
+      mpich_version = toolName.split(':')[1]      
     elif "mvapich" in toolName and ':' in toolName:
       mvapich_version = toolName.split(':')[1]
       mvapichInstalled = True
-
+      
   versionList["cmake"] = cmake_version
   versionList["autoconf"] = autoconf_version
   versionList["gcc"] = gcc_version
@@ -587,7 +590,7 @@ def main(cmndLineArgs):
     print("\n***")
     print("*** NOTE: --no-op provided, will only trace actions and not touch the filesystem!")
     print("***\n")
-
+  
   commonToolsSelected = \
     getToolsSelectedArray(inOptions.commonTools, commonToolsArray)
   print("\nSelected common tools = " + str(commonToolsSelected))
@@ -618,7 +621,6 @@ def main(cmndLineArgs):
 
   dev_env_dir = os.path.join(dev_env_base_dir, "env")
   dev_env_exists = os.path.exists(dev_env_dir)
-
   if inOptions.doInitialSetup:
     if not dev_env_base_exists:
       print("Creating directory '" + dev_env_base_dir + "' ...")
@@ -646,7 +648,6 @@ def main(cmndLineArgs):
           ".[sh,csh] ...")
     if not inOptions.skipOp:
       writeLoadDevEnvFiles(dev_env_base_dir, dev_env_dir, inOptions, versionList, mvapichInstalled)
-
   else:
 
     print("Skipping setup of the install directory by request!")
@@ -659,8 +660,13 @@ def main(cmndLineArgs):
     os.system("mkdir " + dev_env_base_dir + "/images")
     os.system("mkdir " + dev_env_base_dir + "/images/dev_env")
     os.system("mkdir " + dev_env_base_dir + "/images/install")
+    gcc_first = gcc_version[0]
+    gcc_short = str()
+    for chr in gcc_version:
+      if chr != '.':
+        gcc_short += chr
     if mvapichInstalled:
-      mpi_version = "mvapich2-2.0"
+      mpi_version = "mvapich2-" + mvapich_version
     else:
       mpi_version = "mpich-" + mpich_version
     if inOptions.mkl_true:
@@ -672,9 +678,9 @@ def main(cmndLineArgs):
       tpl_url = "https://github.com/CASL/vera_tpls.git"
       tpl_source_dir = "/vera_tpls/TPL_build/"
     os.system("autoconf")
-    os.system("./configure GCC_VERSION=gcc_version MPI_VERSION=mpi_version CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
+    os.system("./configure GCC_VERSION=gcc_version GCC_FIRST=gcc_first GCC_SHORT=gcc_short MPI_VERSION=MPI_VERSION CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
     os.system("mv Dockerfile " + dev_env_base_dir + "/images/dev_env")
-    os.system("cp Dockerfile_install " + dev_env_base_dir + "/images/install")
+    os.system("mv Dockerfile_install " + dev_env_base_dir + "/images/install")
   ###
   print("\n\nB) Download all sources for each selected tool:\n")
   ###
@@ -699,21 +705,17 @@ def main(cmndLineArgs):
           inOptions.sourceGitUrlBase, inOptions)
     for tool in compilerToolsetSelectedSet:
       if "gcc" in tool:
-        if gcc_version == "4.8.3":
-            downloadToolSource("gcc", gcc_version,
-            inOptions.sourceGitUrlBase, inOptions)
+        print("")
+        print("Downloading the source for gcc-" + gcc_version + " ...")
+        print("")
+        if not inOptions.skipOp:
+          try:
+            os.system("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
+          except:
+            print("Invalid gcc version passed. No Download link found.")
+            exit(1)
         else:
-            print("")
-            print("Downloading the source for gcc-" + gcc_version + " ...")
-            print("")
-            if not inOptions.skipOp:
-                try:
-                    os.system("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
-                except:
-                    print("Invalid gcc version passed. No Download link found.")
-                    exit(1)
-                else:
-                    print("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
+          print("wget https://ftp.gnu.org/gnu/gcc/gcc-" + gcc_version + "/gcc-" + gcc_version + ".tar.gz")
 
       elif "mpich" in tool:
         if mpich_version == '3.1.3':
@@ -755,20 +757,19 @@ def main(cmndLineArgs):
   if inOptions.doInstall:
     if "gitdist" in commonToolsSelectedSet:
       print("\nInstalling gitdist ...")
-      if not inOptions.skipOp:
-        echoRunSysCmnd("cp "+pythonUtilsDir+"/gitdist "+common_tools_dir+"/")
-        InstallProgramDriver.fixupInstallPermissions(inOptions, common_tools_dir)
+      echoRunSysCmnd("cp "+pythonUtilsDir+"/gitdist "+common_tools_dir+"/")
+      InstallProgramDriver.fixupInstallPermissions(inOptions, common_tools_dir)
 
     if "cmake" in commonToolsSelectedSet:
+      os.system("tar -xf " + common_tools_dir + "/cmake-" + cmake_version + ".tar.gz")
+      os.system("mv -f cmake-" + cmake_version + " " + common_tools_dir)
+      os.system("yum install openssl-devel")
       if not inOptions.skipOp:
-        os.system("tar -xf " + common_tools_dir + "/cmake-" + cmake_version + ".tar.gz")
-        os.system("mv -f cmake-" + cmake_version + " " + common_tools_dir)
-        os.system("yum install openssl-devel")
         try:
           os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         except:
           os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
-        os.system("make -j" + numProcs + " install")
+        os.system("make -j8 install")
         os.system("cd ..")
         cmake_module = open(dev_env_dir + "/cmake-" + cmake_version, 'w+')
         cmake_module.write("#%Module\n\n")
@@ -781,48 +782,28 @@ def main(cmndLineArgs):
         cmake_module.write("module-whatis $msg\n")
         cmake_module.write(common_tools_dir + "cmake-$version/bin\n")
         cmake_module.close()
-      else:
-        print("tar -xf " + common_tools_dir + "/cmake-" + cmake_version + ".tar.gz")
-        print("mv -f cmake-" + cmake_version + " " + common_tools_dir)
-        print("yum install openssl-devel")
-        print("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
-      if "autoconf" in commonToolsSelectedSet:
-        installToolFromSource("autoconf", autoconf_version,
-                              common_tools_dir, None, inOptions )
+    if "autoconf" in commonToolsSelectedSet:
+      installToolFromSource("autoconf", autoconf_version_default,
+        common_tools_dir, None, inOptions )
 
     if "gcc" in compilerToolsetSelectedSet:
-      if gcc_version == "4.8.3":
-        installToolFromSource("gcc", gcc_version, compiler_toolset_dir, None, inOptions)
-      elif not inOptions.skipOp:
-        print("unpacking gcc-" + gcc_version + ".tar.gz...")
-        os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
-        os.chdir("gcc-" + gcc_version)
-        print("downloading gcc prerequisites...")
-        os.system("./contrib/download_prerequisites")
-        os.system("sed -i 's/m4-not-needed/m4/g' gmp/configure*")
-        os.chdir(compiler_toolset_dir)
-        os.system("mkdir gcc-" + gcc_version)
-        os.chdir("gcc-" + gcc_version)
-        print("configuring gcc...")
-        os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --disable-multilib --prefix=" + compiler_toolset_dir + "/gcc-" + gcc_version + " --enable-languages=c,c++,fortran")
-        print("building gcc...")
-        os.system("make -j" + numProcs)
-        os.system("make install")
-        os.chdir(scratch_dir)
-      else:
-        print("unpacking gcc-" + gcc_version + ".tar.gz...")
-        print("tar xzf gcc-" + gcc_version + ".tar.gz")
-        print("downloading gcc prerequisites...")
-        print("./contrib/download_prerequisites")
-        print("mkdir gcc-" + gcc_version)
-        print("configuring gcc...")
-        print(scratch_dir + "/gcc-" + gcc_version + "/configure --disable-multilib --prefix=" + compiler_toolset_dir + "/gcc-" + gcc_version + " --enable-languages=c,c++,fortran")
-        print("building gcc...")
-        print("make -j" + numProcs)
-        print("make install")
+      print("unpacking gcc-" + gcc_version + ".tar.gz...")
+      os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
+      os.chdir("gcc-" + gcc_version)
+      print("downloading gcc prerequisites...")
+      os.system("./contrib/download_prerequisites")      
+      os.chdir(compiler_toolset_dir)
+      os.system("mkdir gcc-" + gcc_version)
+      os.chdir("gcc-" + gcc_version)
+      print("configuring gcc...")
+      os.system(scratch_dir + "/gcc-" + gcc_version + "/configure --disable-multilib --prefix=" + compiler_toolset_dir + "/gcc-" + gcc_version + " --enable-languages=c,c++,fortran")
+      print("building gcc...")
+      os.system("make -j8")
+      os.system("make install")
+      os.chdir(scratch_dir)
       if not inOptions.skipOp:
         gcc_module = open(dev_env_dir + "/gcc-" + gcc_version, 'w+')
-        gcc_module.write("#%Module\n\n")
+        gcc_module.write("#%module\n\n")
         gcc_module.write("set root " + dev_env_base_dir + "\n")
         gcc_module.write("set version gcc-" + gcc_version + "\n")
         gcc_module.write("set tpldir " + compiler_toolset_base_dir + "/tpls\n")
@@ -869,12 +850,12 @@ def main(cmndLineArgs):
         gcc_module.write("set-alias gitdist-status     {gitdist dist-repo-status}\n")
         gcc_module.write("set-alias gitdist-mod        {gitdist --dist-mod-only}\n")
         gcc_module.close()
-
+        
     if "mpich" in compilerToolsetSelectedSet:
       gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
         raise Exception("Error, gcc has not been installed yet." \
-          "  Missing directory '"+gccInstallDir+"'")
+          "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       if mpich_version == "3.1.3":
         installToolFromSource(
@@ -892,14 +873,13 @@ def main(cmndLineArgs):
       else:
         os.system("tar xfz mpich-" + mpich_version + ".tar.gz")
         os.system("mkdir -p " + compiler_toolset_dir + "/mpich-" + mpich_version)
-        os.system("mkdir tmp")
+        os.system("mkdir tmp") 
         os.chdir("tmp")
         os.system("../mpich-" + mpich_version +  "/configure -prefix=" + compiler_toolset_dir + "/mpich-" + mpich_version)
         os.system("make")
         os.system("make install")
       if not inOptions.skipOp:
         mpich_module = open(dev_env_dir + "/mpich-" + mpich_version, 'w+')
-        mpich_module.write("#%Module\n\n")
         mpich_module.write("conflict mvapich\n")
         mpich_module.write("prepend-path            PATH            /usr/lib64/mpich/bin\n")
         mpich_module.write("prepend-path            LD_LIBRARY_PATH /usr/lib64/mpich/lib\n")
@@ -922,7 +902,7 @@ def main(cmndLineArgs):
       gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
         raise Exception("Error, gcc has not been installed yet." \
-          "  Missing directory '"+gccInstallDir+"'")
+          "  Missing directory '"+gccInstallDir+"'") 
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       mvapichDir = gccInstallDir + "/toolset/mvapich-" + mvapich_version
       if not inOptions.skipOp:
@@ -930,10 +910,9 @@ def main(cmndLineArgs):
         os.system("gzip -dc mvapich2-" + mvapich_version + ".tar.gz | tar -x")
         os.chdir("mvapich2-" + mvapich_version)
         os.system("./configure --prefix " + mvapichDir)
-        os.system("make -j" + numProcs)
+        os.system("make -j8")
         os.system("make install")
         mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
-        mvapich_module.write("#%Module\n\n")
         mvapich_module.write("conflict mpich\n")
         mvapich_module.write("prepend-path            PATH            /usr/lib64/mvapich2/bin\n")
         mvapich_module.write("prepend-path            LD_LIBRARY_PATH /usr/lib64/mvapich2/lib\n")
@@ -967,7 +946,7 @@ def main(cmndLineArgs):
     os.system("mv load_dev_env.csh " + dev_env_dir)
 
   print("installing CMake target for vera_tpls")
-  if not inOptions.skipOp and inOptions.doInstall:
+  if not inOptions.skipOp and inOptions.doInstall:   
     os.system("mkdir " + compiler_toolset_base_dir + "/tpls")
     os.chdir(scratch_dir + "/..")
     os.system("git submodule init && git submodule update")
@@ -977,15 +956,15 @@ def main(cmndLineArgs):
     os.system("rm -rf *")
     os.system("module load mpi")
     os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../../vera_tpls/TPL_build')
-    os.system("make -j" + numProcs + " || make -j" + numProcs)
+    os.system("make -j8 || make -j8")
   else:
     print("git submodule init && git submodule update")
     print('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
-    print("make -j" + numProcs)
+    print("make -j8")
   if not inOptions.skipOp:
     if inOptions.build_image:
       print("building docker image")
-      os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")
+      os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")  
   if inOptions.showFinalInstructions:
     print("\nTo use the new dev env, just source the file:\n")
     print("  source " + dev_env_base_dir + "/env/load_dev_env.sh\n")
@@ -998,7 +977,6 @@ def main(cmndLineArgs):
 #
 # Script driver
 #
-
 if __name__ == '__main__':
   try:
     sys.exit(main(sys.argv[1:]))
@@ -1007,3 +985,4 @@ if __name__ == '__main__':
     print()
     printStackTrace()
     sys.exit(1)
+

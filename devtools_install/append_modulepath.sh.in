@@ -1,0 +1,2 @@
+#!/bin/bash
+export MODULEPATH="@DEV_ENV_DIR@:${MODULEPATH}"

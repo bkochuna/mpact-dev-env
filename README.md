@@ -32,7 +32,7 @@ To install the default mpact-dev-env, run the following commands:
   $ cd mpact-dev-env/devtools_install
   $ python install_devtools.py --install-dir=<install-dir> --do-all
 ```
-install_devtools.py creates the directory tree within <install dir>, downloads the necessary source code for all tools, then configures and installs the tools.
+install_devtools.py creates the directory tree within \<install dir>, downloads the necessary source code for all tools, then configures and installs the tools.
 By default, this installs gcc-4.8.3, mpich-3.1.3, cmake-3.3.2, and autoconf-2.69, i.e, mpact-dev-env-1.0, per the versioning specified below.
 For more detailed installation instructions, including specifiying alternate software versions, run python install_devtools.py --help.
 

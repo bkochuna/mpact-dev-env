@@ -822,7 +822,7 @@ def main(cmndLineArgs):
         print("make install")
       if not inOptions.skipOp:
         gcc_module = open(dev_env_dir + "/gcc-" + gcc_version, 'w+')
-        gcc_module.write("#%module\n\n")
+        gcc_module.write("#%Module\n\n")
         gcc_module.write("set root " + dev_env_base_dir + "\n")
         gcc_module.write("set version gcc-" + gcc_version + "\n")
         gcc_module.write("set tpldir " + compiler_toolset_base_dir + "/tpls\n")
@@ -899,6 +899,7 @@ def main(cmndLineArgs):
         os.system("make install")
       if not inOptions.skipOp:
         mpich_module = open(dev_env_dir + "/mpich-" + mpich_version, 'w+')
+        mpich_module.write("#%Module\n\n")
         mpich_module.write("conflict mvapich\n")
         mpich_module.write("prepend-path            PATH            /usr/lib64/mpich/bin\n")
         mpich_module.write("prepend-path            LD_LIBRARY_PATH /usr/lib64/mpich/lib\n")
@@ -932,6 +933,7 @@ def main(cmndLineArgs):
         os.system("make -j" + numProcs)
         os.system("make install")
         mvapich_module = open(dev_env_dir + "/mvapich-" + mvapich_version, 'w+')
+        mvapich_module.write("#%Module\n\n")
         mvapich_module.write("conflict mpich\n")
         mvapich_module.write("prepend-path            PATH            /usr/lib64/mvapich2/bin\n")
         mvapich_module.write("prepend-path            LD_LIBRARY_PATH /usr/lib64/mvapich2/lib\n")

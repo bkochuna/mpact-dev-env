@@ -51,6 +51,16 @@ Tag: set for any deviations from major.minor.patch
 
 E.g, v1.0 would have gcc-4.8.3 and mpich-3.1.3, v2.0 would have gcc-5.4.0 and mpich-3.1.3, and v1.0-mvapich would have gcc-4.8.3 and mvapich2-2.3.
 
+To build mpact-dev-env-2.0, run:
+```bash
+  $ python install_devtools.py --install-dir=<install-dir> --compiler-toolset=gcc-5.4.0,mpich --do-all
+```
+
+To build mpact-dev-env-3.0, run:
+```bash
+  $ python install_devtools.py --install-dir=<install-dir> --compiler-toolset=gcc-6.4.0,mpich --do-all
+```
+
 <b>Docker and SSH Information</b>
 
 Running install_devtools.py will create the images directory with two subdirectories, each containing a Dockerfile.

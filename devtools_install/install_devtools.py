@@ -660,10 +660,6 @@ def main(cmndLineArgs):
     os.system("mkdir " + dev_env_base_dir + "/images")
     os.system("mkdir " + dev_env_base_dir + "/images/dev_env")
     os.system("mkdir " + dev_env_base_dir + "/images/install")
-    if mvapichInstalled:
-      mpi_version = "mvapich2-" + mvapich_version
-    else:
-      mpi_version = "mpich-" + mpich_version
     if inOptions.mkl_true:
       mkl_true = "true"
       tpl_url = 'https://github.com/ehcole/MPACT_tpls.git'
@@ -673,7 +669,7 @@ def main(cmndLineArgs):
       tpl_url = "https://github.com/CASL/vera_tpls.git"
       tpl_source_dir = "/vera_tpls/TPL_build/"
     os.system("autoconf")
-    os.system("./configure GCC_VERSION=gcc_version MPI_VERSION=MPI_VERSION CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true")
+    os.system("./configure GCC_VERSION=gcc_version MPI_VERSION=MPI_VERSION CMAKE_VERSION=cmake_version TPL_URL=tpl_url TPL_SOURCE_DIR=tpl_source_dir MKL_TRUE=mkl_true MVAPICH_INSTALLED=mvapichInstalled")
     os.system("mv Dockerfile " + dev_env_base_dir + "/images/dev_env")
     os.system("mv Dockerfile_install " + dev_env_base_dir + "/images/install")
   ###

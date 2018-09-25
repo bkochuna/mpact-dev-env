@@ -63,6 +63,14 @@ cmake_version_default = "3.3.2"
 gcc_version_default = "4.8.3"
 mpich_version_default = "3.1.3"
 mvapich_version_default = "2.3"
+hdf5_version_default="1.8.10"
+blas_version_default = "3.3.1"
+lapack_version_default = "3.3.1"
+hypre_version_default = "2.9.1a"
+petsc_version_default = "3.5.4"
+slepc_version_default = "3.5.4"
+sundials_version_default = "2.9.0"
+
 
 # Common (compile independent) tools
 commonToolsArray = [ "gitdist", "autoconf", "cmake" ]
@@ -72,6 +80,9 @@ commonToolsChoices = (["all"] + commonToolsArray + [""])
 compilerToolsetArray = [ "gcc", "mpich", "mvapich" ]
 compilerToolsetChoices = (["all"] + compilerToolsetArray + [""])
 
+# TPL toolset
+TPLToolsetArray = [ "hdf5", "blas", "lapack", "hypre", "petsc", "slepc", "sundials" ]
+TPLToolsetChoices = (["all"] + TPLToolsetArray + [""])
 
 #
 # Utility functions
@@ -111,6 +122,13 @@ The default versions of the tools installed are:
 * cmake-"""+cmake_version_default+"""
 * gcc-"""+gcc_version_default+"""
 * mpich-"""+mpich_version_default+"""
+* hdf5-"""+hdf5_version_default+"""
+* blas-"""+blas_version_default+"""
+* lapack-"""+lapack_version_default+"""
+* hypre-"""+hypre_version_default+"""
+* petsc-"""+petsc_version_default+"""
+* slepc-"""+slepc_version_default+"""
+* sundials-"""+sundials_version_default+"""
 
 The tools installed under common_tools/ only need to be installed once
 independent of any compilers that may be used to build TriBITS-based projects.
@@ -122,7 +140,7 @@ The download and install of each of these tools is drive by its own
 install-<toolname>.py script in the same directory as install-devtools.py.
 
 Before running this script, some version of a C and C++ compiler must already
-be installed on the system.  
+be installed on the system.
 
 At a high level, this script performs the following actions.
 
@@ -147,30 +165,30 @@ The informational arguments to this function are:
     default.  If this is not specified then it will abort.
 
   --source-git-url-base=<url_base>
-  
+
     Gives the base URL for to get the tool sources from.  The default is:
-  
+
       """+sourceGitUrlBase_default+"""
-  
+
     This is used to build the full git URL as:
-  
+
       <url_base><tool_name>-<tool_version>-base
-  
+
     This can also accomidate gitolite repos and other directory structures,
     for example, with:
-  
+
       git@<host-name>:prerequisites/
-  
+
   --common-tools=all
-  
+
     Specifies the tools to download and install under common_tools/.  One can
     pick specific tools with:
-  
+
       --common-tools=autoconf,cmake,...
-  
+
     This will download and install the default versions of these tools.  To
     select specific versions, use:
-  
+
       --common-tools=autoconf:"""+autoconf_version_default+""",cmake:"""+cmake_version_default+""",...
 
     The default is 'all'.  To install none of these, pass in empty:
@@ -184,19 +202,19 @@ The informational arguments to this function are:
     version of git and most systems will already have a current-enough version
     of git so there is no need to install one to be effective doing
     development.)
-  
+
   --compiler-toolset=all
-  
+
     Specifies GCC and MPICH (and other compiler-specific tools) to download
     and install under gcc-<gcc-version>/toolset/.  One can pick specific
     componets with:
-  
+
       --compiler-toolset=gcc,mpich
-  
+
     or specific versions with:
-  
+
       --compiler-toolset=gcc:"""+gcc_version_default+""",mpich:"""+mpich_version_default+"""
-  
+
     Of course if one is only installing GCC with an existing installed MPICH,
     one will need to also reinstall MPICH as well.
 
@@ -204,15 +222,34 @@ The informational arguments to this function are:
 
       --compiler-toolset=''
 
+  --tpl-toolset=all
+
+    Specifies HDF5, BLAS, LAPACK, HYPRE, PETSC, SLEPC, and SUNDIALS (and other
+    TPL tools) to download and install under gcc-<gcc-version>/toolset/.  One can pick specific
+    componets with:
+
+      --tpl-toolset=gcc,mpich
+
+    or specific versions with:
+
+      --tpl-toolset=gcc:"""+gcc_version_default+""",mpich:"""+mpich_version_default+"""
+
+    Of course if one is only installing GCC with an existing installed MPICH,
+    one will need to also reinstall MPICH as well.
+
+    The default is 'all'.  To install none of these, pass in empty:
+
+      --tpl-toolset=''
+
 The action argumnets are:
 
   --initial-setup: Create <dev_env_base>/ directories and install
     load_dev_env.sh
-  
+
   --download: Download all of the requested tools
-  
+
   --install: Configure, build, and install all of the requested tools
-  
+
   --do-all: Do everything.  Implies --initial-setup --downlaod --install
 
 To change modify the permissions of the installed files, see the options
@@ -240,14 +277,14 @@ More information about what versions are installed, how they are installed,
 etc. is found in these scripts.  Note that some of these scripts apply patches
 for certain versions.  For details, look at the --help output from these
 scripts and look at the implementaion of these scripts.
-"""        
+"""
 
 
 # Get and process command-line arguments
 def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
 
   from optparse import OptionParser
-  
+
   clp = OptionParser(usage=usageHelp)
   clp.add_option(
     "--install-dir", dest="installDir", type="string", default="",
@@ -281,6 +318,13 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
       " '"+(",".join(compilerToolsetArray))+"' (separated by commas, no spaces).")
 
   clp.add_option(
+    "--tpl-toolset", dest="TPLToolset", type="string", default="all",
+    help="Specifies and other tpl-specific tools to" \
+      " set in the load_dev_env scripts." \
+      "  Can be 'all', or empty '', or any combination of" \
+      " '"+(",".join(TPLToolsetArray))+"' (separated by commas, no spaces).")
+
+  clp.add_option(
     "--parallel", dest="parallelLevel", type="string", default="1",
     help="Number of parallel processes to use in the build.  The default is" \
       " just '1'.  Use something like '8' to get faster parallel builds." )
@@ -291,7 +335,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
   clp.add_option(
     "--no-op", dest="skipOp", action="store_true", default=False,
     help="Skip all of the requested actions and just print what would be done.")
-    
+
   clp.add_option(
     "--show-defaults", dest="showDefaults", action="store_true", default=False,
     help="[ACTION] Show the defaults and exit." )
@@ -312,7 +356,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
     "--install", dest="doInstall", action="store_true", default=False,
     help="[ACTION] Configure, build, and install all of the tools specified by" \
       " --common-tools and --compiler-toolset.")
-    
+
   clp.add_option(
     "--show-final-instructions", dest="showFinalInstructions", action="store_true",
     default=False,
@@ -329,7 +373,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
 
   (options, args) = clp.parse_args(args=cmndLineArgs)
 
-  # NOTE: Above, in the pairs of boolean options, the *last* add_option(...) 
+  # NOTE: Above, in the pairs of boolean options, the *last* add_option(...)
   # takes effect!  That is why the commands are ordered the way they are!
 
   #
@@ -346,6 +390,7 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
     cmndLine +=  "  --load-dev-env-file-base-name='"+options.loadDevEnvFileBaseName+"' \\\n"
     cmndLine +=  "  --common-tools='"+options.commonTools+"' \\\n"
     cmndLine +=  "  --compiler-toolset='"+options.compilerToolset+"' \\\n"
+    cmndLine +=  "  --tpl-toolset='"+options.TPLToolset+"' \\\n"
     cmndLine +=  "  --parallel='"+options.parallelLevel+"' \\\n"
     if not options.skipOp:
       cmndLine +=  "  --do-op \\\n"
@@ -383,6 +428,10 @@ def getCmndLineOptions(cmndLineArgs, skipEchoCmndLine=False):
   if options.compilerToolset == "all":
     options.compilerToolset = ",".join(compilerToolsetArray)
   #print("options.compilerToolset = '"+options.compilerToolset+"'")
+
+  if options.TPLToolset == "all":
+    options.TPLToolset = ",".join(TPLToolsetArray)
+  #print("options.TPLToolset = '"+options.TPLToolset+"'")
 
   if options.doAll:
     options.doInitialSetup = True
@@ -456,12 +505,19 @@ def writeLoadDevEnvFiles(devEnvBaseDir, devEnvDir, inOptions, versionList, mvapi
     ("@DEV_ENV_BASE@", devEnvBaseDir),
     ("@CMAKE_VERSION@", versionList["cmake"]),
     ("@AUTOCONF_VERSION@", versionList["autoconf"]),
-    ("@GCC_VERSION@", versionList["gcc"])]
+    ("@GCC_VERSION@", versionList["gcc"])
+    ("@HDF5_VERSION@", versionList["hdf5"])
+    ("@BLAS_VERSION@", versionList["blas"])
+    ("@LAPACK_VERSION@", versionList["lapack"])
+    ("@HYPRE_VERSION@", versionList["hypre"])
+    ("@PETSC_VERSION@", versionList["petsc"])
+    ("@SLEPC_VERSION@", versionList["slepc"])
+    ("@SUNDIALS_VERSION@", versionList["sundials"])]
   if mvapichInstalled:
     subPairArray.append(("@MVAPICH_VERSION@", versionList["mvapich"]))
   else:
     subPairArray.append(("@MPICH_VERSION@", versionList["mpich"])),
-   
+
 
   load_dev_env_base = inOptions.loadDevEnvFileBaseName
 
@@ -564,6 +620,14 @@ def main(cmndLineArgs):
   mpich_version = mpich_version_default
   mvapich_version = mvapich_version_default
   mvapichInstalled = False
+  hdf5_version = hdf5_version_default
+  blas_version = blas_version_default
+  lapack_version = lapack_version_default
+  hypre_version = hypre_version_default
+  petsc_version = petsc_version_default
+  slepc_version = slepc_version_default
+  sundials_version = sundials_version_default
+
   #iterates over tools selected. If name is specified and a ':' is present, non-default version was specified. Updating install version to specified value
   #if no version was specified, default version will be installed
   inOptions = getCmndLineOptions(cmndLineArgs)
@@ -575,23 +639,45 @@ def main(cmndLineArgs):
       autoconf_version = toolName.split(':')[1]
   for toolName in inOptions.compilerToolset.split(','):
     if "gcc" in toolName and ':' in toolName:
-      gcc_version = toolName.split(':')[1]      
+      gcc_version = toolName.split(':')[1]
     elif "mpich" in toolName and ':' in toolName:
-      mpich_version = toolName.split(':')[1]      
+      mpich_version = toolName.split(':')[1]
     elif "mvapich" in toolName and ':' in toolName:
       mvapich_version = toolName.split(':')[1]
       mvapichInstalled = True
-      
+  for toolName in inOptions.TPLToolset.split(','):
+    if "hdf5" in toolName and ':' in toolName:
+      hdf5_version = toolName.split(':')[1]
+    elif "blas" in toolName and ':' in toolName:
+      blas_version = toolName.split(':')[1]
+    elif "lapack" in toolName and ':' in toolName:
+      lapack_version = toolName.split(':')[1]
+    elif "hypre" in toolName and ':' in toolName:
+      hypre_version = toolName.split(':')[1]
+    elif "petsc" in toolName and ':' in toolName:
+      petsc_version = toolName.split(':')[1]
+    elif "slepc" in toolName and ':' in toolName:
+      slepc_version = toolName.split(':')[1]
+    elif "sundials" in toolName and ':' in toolName:
+      sundials_version = toolName.split(':')[1]
+
   versionList["cmake"] = cmake_version
   versionList["autoconf"] = autoconf_version
   versionList["gcc"] = gcc_version
   versionList["mpich"] = mpich_version
   versionList["mvapich"] = mvapich_version
+  versionList["hdf5"] = hdf5_version
+  versionList["blas"] = blas_version
+  versionList["lapack"] = lapack_version
+  versionList["hypre"] = hypre_version
+  versionList["petsc"] = petsc_version
+  versionList["slepc"] = slepc_version
+  versionList["sundials"] = sundials_version
   if inOptions.skipOp:
     print("\n***")
     print("*** NOTE: --no-op provided, will only trace actions and not touch the filesystem!")
     print("***\n")
-  
+
   commonToolsSelected = \
     getToolsSelectedArray(inOptions.commonTools, commonToolsArray)
   print("\nSelected common tools = " + str(commonToolsSelected))
@@ -601,6 +687,11 @@ def main(cmndLineArgs):
     getToolsSelectedArray(inOptions.compilerToolset, compilerToolsetArray)
   print("\nSelected compiler toolset = " + str(compilerToolsetSelected))
   compilerToolsetSelectedSet = set(compilerToolsetSelected)
+
+  TPLToolsetSelected = \
+    getToolsSelectedArray(inOptions.TPLToolset, TPLToolsetArray)
+  print("\nSelected compiler toolset = " + str(TPLToolsetSelected))
+  TPLToolsetSelectedSet = set(TPLToolsetSelected)
 
   dev_env_base_dir = inOptions.installDir
 
@@ -757,11 +848,11 @@ def main(cmndLineArgs):
       os.system("mv -f cmake-" + cmake_version + " " + common_tools_dir)
       os.system("yum install openssl-devel")
       if not inOptions.skipOp:
-        
+
         print("CUSTOM DEVIATION FROM DEVENV SETUP: OPENSSL")
         # Force the code to compile with ssl to avoid errors in subsequent make
         os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_USE_OPENSSL=ON -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
-        
+
         #os.system("cmake " + common_tools_dir + "/cmake-" + cmake_version + " -DCMAKE_INSTALL_PREFIX=" + dev_env_base_dir + "/common_tools/cmake-" + cmake_version + "/")
         # To return code to original state, uncomment above and indent previous line
 
@@ -789,14 +880,14 @@ def main(cmndLineArgs):
     if "gcc" in compilerToolsetSelectedSet:
       print("unpacking gcc-" + gcc_version + ".tar.gz...")
       os.system("tar xzf gcc-" + gcc_version + ".tar.gz")
-      
+
       os.chdir("gcc-" + gcc_version)
       print("downloading gcc prerequisites...")
-      os.system("./contrib/download_prerequisites")      
+      os.system("./contrib/download_prerequisites")
       print("CUSTOM DEVIATION FROM STD DEVENV SETUP:")
       print("Apply patch to gcc source (struct ucontext vs ucontext_t)")
       os.system("wget -O compiler.patch https://gcc.gnu.org/git/?p=gcc.git\;a=patch\;h=14c2f22a1877f6b60a2f7c2f83ffb032759456a6")
-      os.system("patch -f -p1 < compiler.patch") 
+      os.system("patch -f -p1 < compiler.patch")
       os.chdir(compiler_toolset_dir)
       os.system("mkdir gcc-" + gcc_version)
       os.chdir("gcc-" + gcc_version)
@@ -857,14 +948,14 @@ def main(cmndLineArgs):
         gcc_module.write("set-alias gitdist-status     {gitdist dist-repo-status}\n")
         gcc_module.write("set-alias gitdist-mod        {gitdist --dist-mod-only}\n")
         gcc_module.close()
-        
+
     if "mpich" in compilerToolsetSelectedSet:
       gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version
       mpich_dir = compiler_toolset_dir + "/mpich-" + mpich_version
-      
+
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
         raise Exception("Error, gcc has not been installed yet." \
-          "  Missing directory '"+gccInstallDir+"'") 
+          "  Missing directory '"+gccInstallDir+"'")
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       if mpich_version == "3.1.3":
         installToolFromSource(
@@ -882,7 +973,7 @@ def main(cmndLineArgs):
       else:
         os.system("tar xfz mpich-" + mpich_version + ".tar.gz")
         os.system("mkdir -p " + compiler_toolset_dir + "/mpich-" + mpich_version)
-        os.system("mkdir tmp") 
+        os.system("mkdir tmp")
         os.chdir("tmp")
         os.system("../mpich-" + mpich_version +  "/configure -prefix=" + compiler_toolset_dir + "/mpich-" + mpich_version)
         os.system("make")
@@ -912,7 +1003,7 @@ def main(cmndLineArgs):
       gccInstallDir = compiler_toolset_dir+"/gcc-"+gcc_version
       if not os.path.exists(gccInstallDir) and not inOptions.skipOp:
         raise Exception("Error, gcc has not been installed yet." \
-          "  Missing directory '"+gccInstallDir+"'") 
+          "  Missing directory '"+gccInstallDir+"'")
       LD_LIBRARY_PATH = os.environ.get("LD_LIBRARY_PATH", "")
       mvapichDir = gccInstallDir + "/toolset/mvapich-" + mvapich_version
       if not inOptions.skipOp:
@@ -956,7 +1047,7 @@ def main(cmndLineArgs):
     os.system("mv /home/mkbz/git/mpact-dev-env/devtools_install/load_dev_env.csh " + dev_env_dir)
 
   print("installing CMake target for vera_tpls")
-  if not inOptions.skipOp and inOptions.doInstall:   
+  if not inOptions.skipOp and inOptions.doInstall:
     os.system("mkdir " + compiler_toolset_base_dir + "/tpls")
     os.chdir(scratch_dir + "/..")
     os.system("git submodule init && git submodule update")
@@ -979,19 +1070,19 @@ def main(cmndLineArgs):
       del os.environ['SLEPC_DIR']
     if 'SUNDIALS_DIR' in os.environ:
       del os.environ['SUNDIALS_DIR']
-    
+
     #mpicc_path = compiler_toolset_dir + "/mpich-"+ mpich_version + "/bin/mpicc"
     #mpicxx_path = compiler_toolset_dir + "/mpich-"+ mpich_version + "/bin/mpicxx"
     #mpif90_path = compiler_toolset_dir + "/mpich-"+ mpich_version + "/bin/mpif90"
-    
+
     # Now do the Python equivalent of loading the mpi module
     os.environ['PATH'] = compiler_toolset_dir + "/mpich-" + mpich_version + "/bin" + os.pathsep + os.environ['PATH']
-    
+
     if 'LD_LIBRARY_PATH' in os.environ:
       os.environ['LD_LIBRARY_PATH'] = compiler_toolset_dir + "/mpich-" + mpich_version + "/lib" + os.pathsep + os.environ['LD_LIBRARY_PATH']
     else:
       os.environ['LD_LIBRARY_PATH'] = compiler_toolset_dir + "/mpich-" + mpich_version + "/lib"
-    
+
     if 'PKG_CONFIG_PATH' in os.environ:
       os.environ['PKG_CONFIG_PATH'] = compiler_toolset_dir + "/mpich-" + mpich_version + "/lib/pkgconfig" + os.pathsep + os.environ['PKG_CONFIG_PATH']
     else:
@@ -1014,7 +1105,7 @@ def main(cmndLineArgs):
   if not inOptions.skipOp:
     if inOptions.build_image:
       print("building docker image")
-      os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")  
+      os.system("docker build -t test-mpact-dev-env " + dev_env_base_dir + "/images")
   if inOptions.showFinalInstructions:
     print("\nTo use the new dev env, just source the file:\n")
     print("  source " + dev_env_base_dir + "/env/load_dev_env.sh\n")
@@ -1035,4 +1126,3 @@ if __name__ == '__main__':
     print()
     printStackTrace()
     sys.exit(1)
-

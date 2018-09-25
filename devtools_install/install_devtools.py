@@ -952,8 +952,9 @@ def main(cmndLineArgs):
     print("*** NOTE: --no-op provided, only traced actions that would have been taken!")
     print("***")
   else:
-    os.system("mv /home/mkbz/git/mpact-dev-env/devtools_install/load_dev_env.sh " + dev_env_dir)
-    os.system("mv /home/mkbz/git/mpact-dev-env/devtools_install/load_dev_env.csh " + dev_env_dir)
+    pass
+    #os.system("mv /home/mkbz/git/mpact-dev-env/devtools_install/load_dev_env.sh " + dev_env_dir)
+    #os.system("mv /home/mkbz/git/mpact-dev-env/devtools_install/load_dev_env.csh " + dev_env_dir)
 
   print("installing CMake target for vera_tpls")
   if not inOptions.skipOp and inOptions.doInstall:   
@@ -988,8 +989,10 @@ def main(cmndLineArgs):
     os.environ['PATH'] = compiler_toolset_dir + "/mpich-" + mpich_version + "/bin" + os.pathsep + os.environ['PATH']
     
     if 'LD_LIBRARY_PATH' in os.environ:
+      os.environ['LD_LIBRARY_PATH'] = compiler_toolset_dir + "/gcc-" + gcc_version + "/lib64" + os.pathsep + os.environ['LD_LIBRARY_PATH']
       os.environ['LD_LIBRARY_PATH'] = compiler_toolset_dir + "/mpich-" + mpich_version + "/lib" + os.pathsep + os.environ['LD_LIBRARY_PATH']
     else:
+      os.environ['LD_LIBRARY_PATH'] = compiler_toolset_dir + "/gcc-" + gcc_version + "/lib64"
       os.environ['LD_LIBRARY_PATH'] = compiler_toolset_dir + "/mpich-" + mpich_version + "/lib"
     
     if 'PKG_CONFIG_PATH' in os.environ:
@@ -1005,11 +1008,14 @@ def main(cmndLineArgs):
     os.environ['MPI_HOME'] = compiler_toolset_dir + "/mpich-" + mpich_version
 
 
-    os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx -D CMAKE_C_COMPILER=mpicc -D CMAKE_Fortran_COMPILER=mpif90 -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../../vera_tpls/TPL_build')
+    os.environ['CC'] = compiler_toolset_dir + "/gcc-"+gcc_version+"/bin/gcc"
+    os.environ['CXX'] = compiler_toolset_dir + "/gcc-"+gcc_version+"/bin/g++"
+    os.environ['FC'] = compiler_toolset_dir + "/gcc-"+gcc_version+"/bin/gfortran"
+    os.system('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx -D CMAKE_C_COMPILER=mpicc -D CMAKE_Fortran_COMPILER=mpif90 -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3" -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../../vera_tpls/TPL_build')
     os.system("make -j8 || make -j8")
   else:
     print("git submodule init && git submodule update")
-    print('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3"  -D LDFLAGS=""  -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
+    print('cmake  -D CMAKE_INSTALL_PREFIX=' + compiler_toolset_base_dir + '/tpls -D CMAKE_BUILD_TYPE=Release  -D CMAKE_CXX_COMPILER=mpicxx  -D CMAKE_C_COMPILER=mpicc  -D CMAKE_Fortran_COMPILER=mpif90  -D FFLAGS="-fPIC -O3"  -D CFLAGS="-fPIC -O3"  -D CXXFLAGS="-fPIC -O3" -D ENABLE_SHARED=ON  -D PROCS_INSTALL=8 ../vera_tpls/TPL_build')
     print("make -j8")
   if not inOptions.skipOp:
     if inOptions.build_image:

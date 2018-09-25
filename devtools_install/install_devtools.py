@@ -225,17 +225,13 @@ The informational arguments to this function are:
   --tpl-toolset=all
 
     Specifies HDF5, BLAS, LAPACK, HYPRE, PETSC, SLEPC, and SUNDIALS (and other
-    TPL tools) to download and install under gcc-<gcc-version>/toolset/.  One can pick specific
-    componets with:
+    TPL tools) to use in the load_dev_env.sh/.csh files.
 
-      --tpl-toolset=gcc,mpich
+      --tpl-toolset=hdf5,blas,lapack,hypre,petsc,slepc,sundials
 
     or specific versions with:
 
-      --tpl-toolset=gcc:"""+gcc_version_default+""",mpich:"""+mpich_version_default+"""
-
-    Of course if one is only installing GCC with an existing installed MPICH,
-    one will need to also reinstall MPICH as well.
+      --tpl-toolset=hdf5:"""+hdf5_version_default+""",blas:"""+blas_version_default+""",lapack:"""+lapack_version_default+""",hypre:"""+hypre_version_default+""",petsc:"""+petsc_version_default+""",slepc:"""+slepc_version_default+""",sundials:"""+sundials_version_default+"""
 
     The default is 'all'.  To install none of these, pass in empty:
 

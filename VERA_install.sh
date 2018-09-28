@@ -5,7 +5,8 @@ ver="5.4.0"
 mpich_ver="3.2.1"
 cmake_ver="3.10.2"
 build_procs=4
-base_dir=/opt/mpact-dev-env
+#base_dir=/opt/mpact-dev-env
+base_dir=/home/mkbz/DevEnv
 install=${base_dir}/gcc-${ver}/toolset
 tpl_install_base=${base_dir}/gcc-${ver}
 common_install=${base_dir}/gcc-${ver}/common_tools
@@ -14,21 +15,10 @@ mkdir -p ${common_install}
 
 #download gcc
 start_dir=${PWD}
-wget http://ftp.gnu.org/gnu/gcc/gcc-${ver}/gcc-${ver}.tar.gz
+wget -N http://ftp.gnu.org/gnu/gcc/gcc-${ver}/gcc-${ver}.tar.gz
 
 #untar and move
 tar zxvf gcc-${ver}.tar.gz
-
-# Check glibc version, and apply patch if necessary
-lddVer=ldd --version | awk '/ldd/{print $NF}'
-lddVer=${lddVer: -2}
-if [ "$lddVer" -gt "25" ]; then
-	cd gcc-${ver}
-	wget -O compiler.patch https://gcc.gnu.org/git/?p=gcc.git\;a=patch\;h=14c2f22a1877f6b60a2f7c2f83ffb032759456a6
-	patch -f -p1 < compiler.patch
-	cd ..
-fi
-
 mv gcc-${ver} gcc-${ver}-source
 
 #download gcc prerequisites (gmp etc...)
@@ -41,7 +31,20 @@ mkdir build_gcc
 cd build_gcc && rm -rf *
 
 #build and install
-../gcc-${ver}-source/configure --disable-multilib --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}
+
+# Check glibc version, and apply patch if necessary
+lddVer=`ldd --version | awk '/ldd/{print $NF}'`
+lddVer=${lddVer: -2}
+if [ "$lddVer" -gt "25" ]; then
+	cd ../gcc-${ver}-source
+	wget -O compiler.patch https://gcc.gnu.org/git/?p=gcc.git\;a=patch\;h=14c2f22a1877f6b60a2f7c2f83ffb032759456a6
+	patch -f -p1 < compiler.patch
+	cd ../build_gcc
+	../gcc-${ver}-source/configure --disable-multilib --disable-libsanitizer --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}
+else
+	../gcc-${ver}-source/configure --disable-multilib --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}
+fi
+
 make -j${build_procs}
 make install
 
@@ -52,7 +55,7 @@ cd ${start_dir}
 
 #mpich
 #download mpich
-wget http://www.mpich.org/static/downloads/${mpich_ver}/mpich-${mpich_ver}.tar.gz
+wget -N http://www.mpich.org/static/downloads/${mpich_ver}/mpich-${mpich_ver}.tar.gz
 tar zxvf mpich-${mpich_ver}.tar.gz
 mv mpich-${mpich_ver} mpich-${mpich_ver}-source
 
@@ -66,7 +69,7 @@ make install
 
 #cmake
 #cmake download
-wget https://cmake.org/files/v3.10/cmake-${cmake_ver}.tar.gz
+wget -N https://cmake.org/files/v3.10/cmake-${cmake_ver}.tar.gz
 tar zxvf cmake-${cmake_ver}.tar.gz
 mv cmake-${cmake_ver} cmake-${cmake_ver}-source
 

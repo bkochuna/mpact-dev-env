@@ -176,6 +176,8 @@ rm -rf gcc-${ver}-source
 rm -rf build_gcc
 rm -rf mpich-${mpich_ver}-source
 rm -rf build_mpich
+rm -rf cmake-${cmake_ver}-source
+rm -rf build_cmake
 
 # Make env load script
 echo "#!/bin/sh" > gcc_env.sh
@@ -196,20 +198,20 @@ source ./gcc_env.sh
 #git clone git@casl-dev:prerequisites/vera_tpls
 git clone https://github.com/CASL/vera_tpls
 
-export VERA_TPL_INSTALL_DIR=tpl_install_base/tpls/opt
+export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/opt
 export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
 ${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Release -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=OFF -DENABLE_SHARED:BOOL=ON  2>&1 |tee install_tpls.out
 
 
-export VERA_TPL_INSTALL_DIR=tpl_install_base/tpls/opt_static
+export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/opt_static
 export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
 ${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Release -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=ON -DENABLE_SHARED:BOOL=OFF  2>&1 |tee install_tpls.out
 
-export VERA_TPL_INSTALL_DIR=tpl_install_base/tpls/dbg
+export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/dbg
 export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
 ${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Debug -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=OFF -DENABLE_SHARED:BOOL=ON  2>&1 |tee install_tpls.out
 
 
-export VERA_TPL_INSTALL_DIR=tpl_install_base/tpls/dbg_static
+export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/dbg_static
 export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
 ${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Debug -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=ON -DENABLE_SHARED:BOOL=OFF  2>&1 |tee install_tpls.out

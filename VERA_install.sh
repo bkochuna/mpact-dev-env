@@ -40,6 +40,11 @@ if [ "$#" -lt  1 ]; then
 	exit 1
 fi
 
+if [ "$1" = "-h" ]; then
+	print_help
+	exit 0
+fi
+
 check_path $1
 base_dir=`readlink -f $1`
 shift
@@ -49,7 +54,7 @@ ver="5.4.0"
 mpich_ver="3.2.1"
 cmake_ver="3.10.2"
 build_procs=4
-skip_gcc=false
+skip_gcc=0
 start_dir=${PWD}
 
 while getopts "j:g::cs:nh" opt; do
@@ -66,8 +71,8 @@ while getopts "j:g::cs:nh" opt; do
 				mpich_ver="unsure"
 			fi
 			;;
-		n) check_gcc; skip_gcc=true;;
-		h) print_help; exit 1;;
+		n) check_gcc; skip_gcc=1;;
+		h) print_help; exit 0;;
 		\?)
 			echo "Invalid option: -$OPTARG" >&2
 			exit 1
@@ -79,7 +84,7 @@ while getopts "j:g::cs:nh" opt; do
 	esac
 done
 
-cd start_dir
+cd $start_dir
 install=${base_dir}/gcc-${ver}/toolset
 tpl_install_base=${base_dir}/gcc-${ver}
 common_install=${base_dir}/gcc-${ver}/common_tools
@@ -90,30 +95,29 @@ mkdir -p ${common_install}
 ##  GCC  ##
 ###########
 
-if [ skip_gcc -eq false ]; then
-	#download gcc
-	start_dir=${PWD}
-	wget http://ftp.gnu.org/gnu/gcc/gcc-${ver}/gcc-${ver}.tar.gz
+if [ $skip_gcc -eq 0 ]; then
+	# Download
+	wget -N http://ftp.gnu.org/gnu/gcc/gcc-${ver}/gcc-${ver}.tar.gz
 
-	#untar and move
+	# Untar
 	tar zxvf gcc-${ver}.tar.gz
 	mv gcc-${ver} gcc-${ver}-source
 
-	#download gcc prerequisites (gmp etc...)
+	# Download gcc prerequisites (gmp etc...)
 	cd gcc-${ver}-source
 	./contrib/download_prerequisites
 	cd ${start_dir}
 
-	#set up build
+	# Set up build directory
 	mkdir build_gcc
 	cd build_gcc && rm -rf *
 
-	#build and install
+	# Build and install
 	../gcc-${ver}-source/configure --disable-multilib --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}
 	make -j${build_procs}
 	make install
 
-	#set up env for mpich build
+	# Set up env for mpich build
 	export PATH=${install}/gcc-${ver}/bin:$PATH
 	export LD_LIBRARY_PATH=${install}/gcc-${ver}/lib64:$LD_LIBRARY_PATH
 else
@@ -133,7 +137,7 @@ cd ${start_dir}
 
 
 # Download mpich
-wget http://www.mpich.org/static/downloads/${mpich_ver}/mpich-${mpich_ver}.tar.gz
+wget -N http://www.mpich.org/static/downloads/${mpich_ver}/mpich-${mpich_ver}.tar.gz
 tar zxvf mpich-${mpich_ver}.tar.gz
 mv mpich-${mpich_ver} mpich-${mpich_ver}-source
 
@@ -155,7 +159,7 @@ cd ${start_dir}
 
 
 # Download cmake
-wget https://cmake.org/files/v3.10/cmake-${cmake_ver}.tar.gz
+wget -N https://cmake.org/files/v3.10/cmake-${cmake_ver}.tar.gz
 tar zxvf cmake-${cmake_ver}.tar.gz
 mv cmake-${cmake_ver} cmake-${cmake_ver}-source
 
@@ -168,6 +172,7 @@ cd build_cmake && rm -rf *
 make -j${build_procs}
 make install
 
+export PATH=${common_install}/cmake-${cmake_ver}/bin:$PATH
 cd ${start_dir}
 
 
@@ -185,6 +190,7 @@ echo ""  >> gcc_env.sh
 echo ""  >> gcc_env.sh
 echo 'export PATH=${install}/gcc-${ver}/bin:$PATH' >>  gcc_env.sh
 echo 'export PATH=${install}/mpich-${mpich_ver}/bin:$PATH' >>  gcc_env.sh
+echo 'export PATH=${common_install}/cmake-${cmake_ver}/bin:$PATH' >> gcc_env.sh
 echo 'export LD_LIBRARY_PATH=${install}/mpich-${mpich_ver}/lib:$LD_LIBRARY_PATH' >>  gcc_env.sh
 chmod 750 gcc_env.sh
 source ./gcc_env.sh
@@ -203,15 +209,15 @@ export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
 ${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Release -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=OFF -DENABLE_SHARED:BOOL=ON  2>&1 |tee install_tpls.out
 
 
-export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/opt_static
-export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
-${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Release -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=ON -DENABLE_SHARED:BOOL=OFF  2>&1 |tee install_tpls.out
+#export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/opt_static
+#export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
+#${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Release -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=ON -DENABLE_SHARED:BOOL=OFF  2>&1 |tee install_tpls.out
 
 export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/dbg
 export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
 ${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Debug -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=OFF -DENABLE_SHARED:BOOL=ON  2>&1 |tee install_tpls.out
 
 
-export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/dbg_static
-export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
-${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Debug -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=ON -DENABLE_SHARED:BOOL=OFF  2>&1 |tee install_tpls.out
+#export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/dbg_static
+#export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
+#${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Debug -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=ON -DENABLE_SHARED:BOOL=OFF  2>&1 |tee install_tpls.out

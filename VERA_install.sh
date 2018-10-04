@@ -147,7 +147,19 @@ if [ $skip_gcc -eq 0 ]; then
 	cd build_gcc && rm -rf *
 
 	# Build and install
-	../gcc-${ver}-source/configure --disable-multilib --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}
+	# Check glibc version, and apply patch if necessary
+	lddVer=`ldd --version | awk '/ldd/{print $NF}'`
+	lddVer=${lddVer: -2}
+	if [ "$lddVer" -gt "25" ]; then
+		cd ../gcc-${ver}-source
+		wget -O compiler.patch https://gcc.gnu.org/git/?p=gcc.git\;a=patch\;h=14c2f22a1877f6b60a2f7c2f83ffb032759456a6
+		patch -f -p1 < compiler.patch
+		cd ../build_gcc
+		../gcc-${ver}-source/configure --disable-multilib --disable-libsanitizer --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}
+	else
+		../gcc-${ver}-source/configure --disable-multilib --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}
+	fi
+
 	make -j${build_procs}
 	make install
 

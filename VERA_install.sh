@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 check_path() {
 	if [ ! -d "$1" ]; then
@@ -57,7 +57,7 @@ build_procs=4
 skip_gcc=0
 start_dir=${PWD}
 
-while getopts "j:g::cs:nh" opt; do
+while getopts "j:g::cs:nhd" opt; do
 	case $opt in
 		j) build_procs=$OPTARG;;
 		s) check_path $OPTARG; start_dir=$OPTARG;;
@@ -84,12 +84,46 @@ while getopts "j:g::cs:nh" opt; do
 	esac
 done
 
+echo "This script will compile gcc 5.4.0 or 4.8.3"
+echo "Your system must be running with a compiler that can compile your chosen version of the dev environment"
+echo "We recommend running the same compiler you will be installing."
+echo "RHEL/Ubuntu users should install the correct compiler with their package manager and set the PATH accordingly."
+echo "Fedora users may install using --releasever and --installroot"
+echo ""
+echo "If your compiler cannot compile the chosen version of gcc this installer WILL fail"
+read -p "Press enter to continue..."
+
 cd $start_dir
 install=${base_dir}/gcc-${ver}/toolset
 tpl_install_base=${base_dir}/gcc-${ver}
 common_install=${base_dir}/gcc-${ver}/common_tools
 mkdir -p ${install}
 mkdir -p ${common_install}
+
+# Set the package manager
+if command -v apt-get > /dev/null; then
+	pacman="apt-get install"
+elif command -v yum > /dev/null; then
+	pacman="yum install"
+elif command -v dnf > /dev/null; then
+	pacman="dnf install"
+else
+	pacman="Error setting package manager"
+fi
+
+if [ $EUID -ne 0 ]; then
+       	if [ ! command -v sudo ]; then
+		echo "You are not running this script as root and sudo is not installed."
+		echo "Install sudo before continuing"
+		exit 1
+	fi
+	pacman="sudo "$pacman
+fi
+
+echo "To continue, we must verify a few packages are installed."
+echo "You may be asked for your password to run the package manager."
+$pacman -y wget libxext-devel
+
 
 ###########
 ##  GCC  ##

@@ -122,7 +122,13 @@ fi
 
 echo "To continue, we must verify a few packages are installed."
 echo "You may be asked for your password to run the package manager."
-$pacman -y wget libxext-devel
+$pacman -y wget libxext-dev m4 python git
+if [ $? -neq 0 ]; then
+  echo "Package installation failed"
+  exit 1
+fi
+ 
+#### MAY REQUIRE PYTHON2 INSTEAD OF PYTHON ON !UBUNTU
 
 
 ###########

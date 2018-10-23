@@ -27,7 +27,8 @@ print_help() {
 	echo "    -s <path> 	is the scratch directory 		(default current directory)"
 	echo "    -g <ver>	is the gcc version. 5.4.0 or 4.8.3.	(default 5.4.0)"
 	echo "    -n		to skip installation of gcc		(will check <install_dir>/toolset/gcc*)"
-	echo "    -h		to print this help"
+	echo "    -v            verbose; prints commands before exec."
+        echo "    -h		to print this help"
 	echo ""
 	echo "Note that the install directory path may not have a symlink in it, and you must have write access"
 	echo "Skipping the gcc installation is not recommended."
@@ -57,7 +58,7 @@ build_procs=4
 skip_gcc=0
 start_dir=${PWD}
 
-while getopts "j:g::cs:nhd" opt; do
+while getopts "j:g::cs:vnh" opt; do
 	case $opt in
 		j) build_procs=$OPTARG;;
 		s) check_path $OPTARG; start_dir=$OPTARG;;
@@ -73,6 +74,7 @@ while getopts "j:g::cs:nhd" opt; do
 			;;
 		n) check_gcc; skip_gcc=1;;
 		h) print_help; exit 0;;
+                v) set -x;;
 		\?)
 			echo "Invalid option: -$OPTARG" >&2
 			exit 1
@@ -89,7 +91,7 @@ echo "As of October 2018, the script will install gcc 7.3.0 (Ubuntu-like systems
 echo "Both of these are capable of compiling gcc 5.4.0. However, they have not been tested with 4.8.3"
 echo "Additionally, the installed versions of compilers may change in the future due to repository updates"
 echo "If this script is failing to install the dev environment, ensure that your compiler is capable"
-echo "of compiling gcc for the chosen environmeng."
+echo "of compiling gcc for the chosen environment."
 echo ""
 sleep 2
 read -p "Press enter to continue..."
@@ -103,7 +105,7 @@ mkdir -p ${common_install}
 
 pacman=""
 if [ $EUID -ne 0 ]; then
-       	if [ ! command -v sudo ]; then
+       	if [ -z `command -v sudo` ]; then
 		echo "You are not running this script as root and sudo is not installed."
 		echo "Install sudo before continuing"
 		exit 1

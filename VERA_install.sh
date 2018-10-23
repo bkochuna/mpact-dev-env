@@ -68,7 +68,7 @@ while getopts "j:g::cs:nhd" opt; do
 			fi
 			if [ $OPTARG -eq "4.8.3" ]; then
 				ver = $OPTARG
-				mpich_ver="unsure"
+				mpich_ver="3.2.1"
 			fi
 			;;
 		n) check_gcc; skip_gcc=1;;
@@ -85,12 +85,13 @@ while getopts "j:g::cs:nhd" opt; do
 done
 
 echo "This script will compile gcc 5.4.0 or 4.8.3"
-echo "Your system must be running with a compiler that can compile your chosen version of the dev environment"
-echo "We recommend running the same compiler you will be installing."
-echo "RHEL/Ubuntu users should install the correct compiler with their package manager and set the PATH accordingly."
-echo "Fedora users may install using --releasever and --installroot"
+echo "As of October 2018, the script will install gcc 7.3.0 (Ubuntu-like systems) or gcc 8.1.1 (Fedora)"
+echo "Both of these are capable of compiling gcc 5.4.0. However, they have not been tested with 4.8.3"
+echo "Additionally, the installed versions of compilers may change in the future due to repository updates"
+echo "If this script is failing to install the dev environment, ensure that your compiler is capable"
+echo "of compiling gcc for the chosen environmeng."
 echo ""
-echo "If your compiler cannot compile the chosen version of gcc this installer WILL fail"
+sleep 2
 read -p "Press enter to continue..."
 
 cd $start_dir
@@ -100,35 +101,42 @@ common_install=${base_dir}/gcc-${ver}/common_tools
 mkdir -p ${install}
 mkdir -p ${common_install}
 
-# Set the package manager
-if command -v apt-get > /dev/null; then
-	pacman="apt-get install"
-elif command -v yum > /dev/null; then
-	pacman="yum install"
-elif command -v dnf > /dev/null; then
-	pacman="dnf install"
-else
-	pacman="Error setting package manager"
-fi
-
+pacman=""
 if [ $EUID -ne 0 ]; then
        	if [ ! command -v sudo ]; then
 		echo "You are not running this script as root and sudo is not installed."
 		echo "Install sudo before continuing"
 		exit 1
 	fi
-	pacman="sudo "$pacman
+	pacman="sudo "
 fi
 
 echo "To continue, we must verify a few packages are installed."
 echo "You may be asked for your password to run the package manager."
-$pacman -y wget libxext-dev m4 python git
-if [ $? -neq 0 ]; then
-  echo "Package installation failed"
-  exit 1
+
+# Set the package manager
+if command -v apt-get > /dev/null; then
+	pacman=$pacman"apt-get"
+        $pacman -y update && $pacman -y upgrade
+        packages="sudo wget patch build-essential environment-modules libxext-dev m4 python git"
+        $pacman -y install $packages
+        source /etc/profile.d/modules.sh
+elif command -v dnf > /dev/null; then
+	pacman=$pacman"dnf"
+        $pacman -y update
+        packages="sudo bzip2 bzip2-libs autoconf libtool Lmod make patch wget which libXext-devel m4 python git gcc gcc-c++"
+        $pacman -y install $packages
+        source /etc/profile.d/modules.sh
+elif command -v yum > /dev/null; then
+	pacman=$pacman"yum"
+        $pacman -y update
+        packages="sudo bzip2 bzip2-libs autoconf libtool environment-modules make patch wget which libXext-devel m4 python git gcc gcc-c++"
+        $pacman -y install $packages
+        source /etc/profile.d/modules.sh
+else
+        echo "Error setting package manager"
+        exit 1
 fi
- 
-#### MAY REQUIRE PYTHON2 INSTEAD OF PYTHON ON !UBUNTU
 
 
 ###########
@@ -140,7 +148,7 @@ if [ $skip_gcc -eq 0 ]; then
 	wget -N http://ftp.gnu.org/gnu/gcc/gcc-${ver}/gcc-${ver}.tar.gz
 
 	# Untar
-	tar zxvf gcc-${ver}.tar.gz
+	tar zxf gcc-${ver}.tar.gz
 	mv gcc-${ver} gcc-${ver}-source
 
 	# Download gcc prerequisites (gmp etc...)
@@ -190,7 +198,7 @@ cd ${start_dir}
 
 # Download mpich
 wget -N http://www.mpich.org/static/downloads/${mpich_ver}/mpich-${mpich_ver}.tar.gz
-tar zxvf mpich-${mpich_ver}.tar.gz
+tar zxf mpich-${mpich_ver}.tar.gz
 mv mpich-${mpich_ver} mpich-${mpich_ver}-source
 
 # Create build directory
@@ -212,7 +220,7 @@ cd ${start_dir}
 
 # Download cmake
 wget -N https://cmake.org/files/v3.10/cmake-${cmake_ver}.tar.gz
-tar zxvf cmake-${cmake_ver}.tar.gz
+tar zxf cmake-${cmake_ver}.tar.gz
 mv cmake-${cmake_ver} cmake-${cmake_ver}-source
 
 # Create build directory
@@ -236,16 +244,42 @@ rm -rf build_mpich
 rm -rf cmake-${cmake_ver}-source
 rm -rf build_cmake
 
-# Make env load script
-echo "#!/bin/sh" > gcc_env.sh
-echo ""  >> gcc_env.sh
-echo ""  >> gcc_env.sh
-echo 'export PATH=${install}/gcc-${ver}/bin:$PATH' >>  gcc_env.sh
-echo 'export PATH=${install}/mpich-${mpich_ver}/bin:$PATH' >>  gcc_env.sh
-echo 'export PATH=${common_install}/cmake-${cmake_ver}/bin:$PATH' >> gcc_env.sh
-echo 'export LD_LIBRARY_PATH=${install}/mpich-${mpich_ver}/lib:$LD_LIBRARY_PATH' >>  gcc_env.sh
-chmod 750 gcc_env.sh
-source ./gcc_env.sh
+# Make Modulefile
+if [ "$ver" == "4.8.3" ]; then
+        moduleVer="1.0"
+else
+        moduleVer="2.0"
+fi
+
+echo "#%Module -*- tcl -*-" > $moduleVer
+echo "## This module loads the dev environment based on gcc ${ver}" >> $moduleVer
+echo "proc ModulesHelp { } {" >> $moduleVer
+echo "    puts stderr \"This module loads Version 2 of the dev environment with gcc 5.4.0\"" >> $moduleVer
+echo "}" >> $moduleVer
+echo "module-whatis \"This module loads Version 2 of the dev environment with gcc 5.4.0\"" >> $moduleVer
+echo "conflict devenv1" >> $moduleVer
+echo "prepend-path      PATH            ${install}/gcc-${ver}/bin" >> $moduleVer
+echo "prepend-path      PATH            ${install}/mpich-${mpich_ver}/bin" >> $moduleVer
+echo "prepend-path      PATH            ${common_install}/cmake-${cmake_ver}/bin" >> $moduleVer
+echo "prepend-path      LD_LIBRARY_PATH ${install}/gcc-${ver}/lib64" >> $moduleVer
+echo "prepend-path      LD_LIBRARY_PATH ${install}/mpich-${mpich_ver}/lib" >> $moduleVer
+
+mkdir -p $base_dir/gcc-${ver}/modules/devenv
+cp $moduleVer $base_dir/gcc-${ver}/modules/devenv
+module use $base_dir/gcc-${ver}/modules
+module load devenv/$moduleVer
+
+## Make env load script
+#echo "#!/bin/sh" > gcc_env.sh
+#echo ""  >> gcc_env.sh
+#echo ""  >> gcc_env.sh
+#echo 'export PATH=${install}/gcc-${ver}/bin:$PATH' >>  gcc_env.sh
+#echo 'export PATH=${install}/mpich-${mpich_ver}/bin:$PATH' >>  gcc_env.sh
+#echo 'export PATH=${common_install}/cmake-${cmake_ver}/bin:$PATH' >> gcc_env.sh
+#echo 'export LD_LIBRARY_PATH=${install}/gcc-${gcc_ver}/lib64:$LD_LIBRARY_PATH' >>  gcc_env.sh
+#echo 'export LD_LIBRARY_PATH=${install}/mpich-${mpich_ver}/lib:$LD_LIBRARY_PATH' >>  gcc_env.sh
+#chmod 750 gcc_env.sh
+#source ./gcc_env.sh
 
 
 ##################
@@ -273,3 +307,10 @@ ${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} 
 #export VERA_TPL_INSTALL_DIR=$tpl_install_base/tpls/dbg_static
 #export LOADED_TRIBITS_DEV_ENV=gcc-${ver}
 #${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Debug -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=ON -DENABLE_SHARED:BOOL=OFF  2>&1 |tee install_tpls.out
+
+echo "Configuration has completed"
+echo "To enable loading of the Dev Environment via modules, add the following line to your .bashrc:"
+echo ""
+echo "module use ${base_dir}/gcc-${ver}/modules"
+echo ""
+echo "We recommend compiling MPACT and running the test suite to ensure your installation is working correctly."

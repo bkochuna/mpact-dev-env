@@ -337,6 +337,11 @@ ${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} 
 #${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Debug -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=ON -DENABLE_SHARED:BOOL=OFF  2>&1 |tee install_tpls.out
 
 echo "Configuration has completed"
+echo "If you did not have the environment-modules package installed prior to running this script, enable it"
+echo "by running the following command:"
+echo ""
+echo "source /etc/profile.d/modules.sh"
+echo ""
 echo "To enable loading of the Dev Environment via modules, add the following line to your .bashrc:"
 echo ""
 echo "module use ${base_dir}/gcc-${ver}/modules"

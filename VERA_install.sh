@@ -289,7 +289,7 @@ rm -rf build_mpich
 rm -rf cmake-${cmake_ver}-source
 rm -rf build_cmake
 
-gen_module_file()
+gen_module_file
 module load devenv/$moduleVer
 
 

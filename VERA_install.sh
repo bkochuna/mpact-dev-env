@@ -27,11 +27,47 @@ print_help() {
 	echo "    -s <path> 	is the scratch directory 		(default current directory)"
 	echo "    -g <ver>	is the gcc version. 5.4.0 or 4.8.3.	(default 5.4.0)"
 	echo "    -n		to skip installation of gcc		(will check <install_dir>/toolset/gcc*)"
+	echo "    -m		only make modulefile, then exit"
 	echo "    -v            verbose; prints commands before exec."
         echo "    -h		to print this help"
 	echo ""
 	echo "Note that the install directory path may not have a symlink in it, and you must have write access"
 	echo "Skipping the gcc installation is not recommended."
+}
+
+gen_module_file() {
+        # Make Modulefile
+        if [ "$ver" == "4.8.3" ]; then
+                moduleVer="1.0"
+        else
+                moduleVer="2.0"
+        fi
+
+        echo "#%Module -*- tcl -*-" > $moduleVer
+        echo "## This module loads the dev environment based on gcc ${ver}" >> $moduleVer
+        echo "proc ModulesHelp { } {" >> $moduleVer
+        echo "    puts stderr \"This module loads Version 2 of the dev environment with gcc 5.4.0\"" >> $moduleVer
+        echo "}" >> $moduleVer
+        echo "module-whatis \"This module loads Version 2 of the dev environment with gcc 5.4.0\"" >> $moduleVer
+        echo "conflict devenv1" >> $moduleVer
+        echo "prepend-path      PATH            ${install}/gcc-${ver}/bin" >> $moduleVer
+        echo "prepend-path      PATH            ${install}/mpich-${mpich_ver}/bin" >> $moduleVer
+        echo "prepend-path      PATH            ${common_install}/cmake-${cmake_ver}/bin" >> $moduleVer
+        echo "prepend-path      LD_LIBRARY_PATH ${install}/gcc-${ver}/lib64" >> $moduleVer
+        echo "prepend-path      LD_LIBRARY_PATH ${install}/mpich-${mpich_ver}/lib" >> $moduleVer
+        echo "setenv            CC              ${install}/gcc-${ver}/bin/gcc" >> $moduleVer
+        echo "setenv            CXX             ${install}/gcc-${ver}/bin/g++" >> $moduleVer
+        echo "setenv            FC              ${install}/gcc-${ver}/bin/gfortran" >> $moduleVer
+        hdf5Dir=($(ls -d ${base_dir}/gcc-${ver}/tpls/opt/hdf5*))
+        echo "setenv            HDF5_ROOT       ${install}/tpls/opt/${hdf5Dir[0]}" >> $moduleVer
+        petscDir=($(ls -d ${base_dir}/gcc-${ver}/tpls/opt/petsc*))
+        echo "setenv            PETSC_DIR       ${install}/tpls/opt/${petscDir[0]}" >> $moduleVer
+        slepcDir=($(ls -d ${base_dir}/gcc-${ver}/tpls/opt/slepc*))
+        echo "setenv            SLEPC_DIR       ${install}/tpls/opt/${slepcDir[0]}" >> $moduleVer
+
+        mkdir -p $base_dir/gcc-${ver}/modules/devenv
+        mv $moduleVer $base_dir/gcc-${ver}/modules/devenv
+        module use $base_dir/gcc-${ver}/modules
 }
 
 # Argument processing
@@ -56,9 +92,10 @@ mpich_ver="3.2.1"
 cmake_ver="3.10.2"
 build_procs=4
 skip_gcc=0
+moduleFileOnly=0
 start_dir=${PWD}
 
-while getopts "j:g::cs:vnh" opt; do
+while getopts "j:g::cs:vnmh" opt; do
 	case $opt in
 		j) build_procs=$OPTARG;;
 		s) check_path $OPTARG; start_dir=$OPTARG;;
@@ -73,6 +110,7 @@ while getopts "j:g::cs:vnh" opt; do
 			fi
 			;;
 		n) check_gcc; skip_gcc=1;;
+                m) moduleFileOnly=1;;
 		h) print_help; exit 0;;
                 v) set -x;;
 		\?)
@@ -86,6 +124,18 @@ while getopts "j:g::cs:vnh" opt; do
 	esac
 done
 
+cd $start_dir
+install=${base_dir}/gcc-${ver}/toolset
+tpl_install_base=${base_dir}/gcc-${ver}
+common_install=${base_dir}/gcc-${ver}/common_tools
+mkdir -p ${install}
+mkdir -p ${common_install}
+
+if [ $moduleFileOnly -eq 1 ]; then
+        gen_module_file
+        exit 0
+fi
+
 echo "This script will compile gcc 5.4.0 or 4.8.3"
 echo "As of October 2018, the script will install gcc 7.3.0 (Ubuntu-like systems) or gcc 8.1.1 (Fedora)"
 echo "Both of these are capable of compiling gcc 5.4.0. However, they have not been tested with 4.8.3"
@@ -95,13 +145,6 @@ echo "of compiling gcc for the chosen environment."
 echo ""
 sleep 2
 read -p "Press enter to continue..."
-
-cd $start_dir
-install=${base_dir}/gcc-${ver}/toolset
-tpl_install_base=${base_dir}/gcc-${ver}
-common_install=${base_dir}/gcc-${ver}/common_tools
-mkdir -p ${install}
-mkdir -p ${common_install}
 
 pacman=""
 if [ $EUID -ne 0 ]; then
@@ -280,35 +323,8 @@ rm -rf build_mpich
 rm -rf cmake-${cmake_ver}-source
 rm -rf build_cmake
 
-# Make Modulefile
-if [ "$ver" == "4.8.3" ]; then
-        moduleVer="1.0"
-else
-        moduleVer="2.0"
-fi
-
-echo "#%Module -*- tcl -*-" > $moduleVer
-echo "## This module loads the dev environment based on gcc ${ver}" >> $moduleVer
-echo "proc ModulesHelp { } {" >> $moduleVer
-echo "    puts stderr \"This module loads Version 2 of the dev environment with gcc 5.4.0\"" >> $moduleVer
-echo "}" >> $moduleVer
-echo "module-whatis \"This module loads Version 2 of the dev environment with gcc 5.4.0\"" >> $moduleVer
-echo "conflict devenv1" >> $moduleVer
-echo "prepend-path      PATH            ${install}/gcc-${ver}/bin" >> $moduleVer
-echo "prepend-path      PATH            ${install}/mpich-${mpich_ver}/bin" >> $moduleVer
-echo "prepend-path      PATH            ${common_install}/cmake-${cmake_ver}/bin" >> $moduleVer
-echo "prepend-path      LD_LIBRARY_PATH ${install}/gcc-${ver}/lib64" >> $moduleVer
-echo "prepend-path      LD_LIBRARY_PATH ${install}/mpich-${mpich_ver}/lib" >> $moduleVer
-
-mkdir -p $base_dir/gcc-${ver}/modules/devenv
-cp $moduleVer $base_dir/gcc-${ver}/modules/devenv
-if ! module use $base_dir/gcc-${ver}/modules; then
-        echo "There are errors with the environment-modules installation"
-        exit 1
-fi
-
+gen_module_file
 module load devenv/$moduleVer
-
 
 ##################
 ##  VERA TPL's  ##
@@ -345,5 +361,8 @@ echo ""
 echo "To enable loading of the Dev Environment via modules, add the following line to your .bashrc:"
 echo ""
 echo "module use ${base_dir}/gcc-${ver}/modules"
+echo ""
+echo "If you are on Ubunutu or you see errors regarding Doxygen and GLIBCXX version, you may need to install"
+echo "doxygen from source with the devenv module loaded. See the instructions on their website to do so."
 echo ""
 echo "We recommend compiling MPACT and running the test suite to ensure your installation is working correctly."

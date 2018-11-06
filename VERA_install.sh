@@ -319,4 +319,7 @@ echo "To enable loading of the Dev Environment via modules, add the following li
 echo ""
 echo "module use ${base_dir}/gcc-${ver}/modules"
 echo ""
+echo "If you are on Ubunutu or you see errors regarding Doxygen and GLIBCXX version, you may need to install"
+echo "doxygen from source with the devenv module loaded. See the instructions on their website to do so."
+echo ""
 echo "We recommend compiling MPACT and running the test suite to ensure your installation is working correctly."

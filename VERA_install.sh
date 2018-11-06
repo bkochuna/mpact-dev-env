@@ -265,6 +265,10 @@ echo "prepend-path      PATH            ${install}/mpich-${mpich_ver}/bin" >> $m
 echo "prepend-path      PATH            ${common_install}/cmake-${cmake_ver}/bin" >> $moduleVer
 echo "prepend-path      LD_LIBRARY_PATH ${install}/gcc-${ver}/lib64" >> $moduleVer
 echo "prepend-path      LD_LIBRARY_PATH ${install}/mpich-${mpich_ver}/lib" >> $moduleVer
+echo "setenv            CC              ${install}/gcc-${ver}/bin/gcc" >> $moduleVer
+echo "setenv            CXX             ${install}/gcc-${ver}/bin/g++" >> $moduleVer
+echo "setenv            FC              ${install}/gcc-${ver}/bin/gfortran" >> $moduleVer
+
 
 mkdir -p $base_dir/gcc-${ver}/modules/devenv
 cp $moduleVer $base_dir/gcc-${ver}/modules/devenv

@@ -163,19 +163,19 @@ echo "You may be asked for your password to run the package manager."
 if command -v apt-get > /dev/null; then
 	pacman=$pacman"apt-get"
         $pacman -y update && $pacman -y upgrade
-        packages="sudo wget patch build-essential environment-modules libxext-dev m4 python git"
+        packages="sudo wget tcl patch build-essential environment-modules libxext-dev m4 python git"
         $pacman -y install $packages
         source /etc/profile.d/modules.sh
 elif command -v dnf > /dev/null; then
 	pacman=$pacman"dnf"
         $pacman -y update
-        packages="sudo bzip2 bzip2-libs autoconf libtool Lmod make patch wget which libXext-devel m4 python git gcc gcc-c++"
+        packages="sudo tcl bzip2 bzip2-libs autoconf libtool Lmod make patch wget which libXext-devel m4 python git gcc gcc-c++"
         $pacman -y install $packages
         source /etc/profile.d/modules.sh
 elif command -v yum > /dev/null; then
 	pacman=$pacman"yum"
         $pacman -y update
-        packages="sudo bzip2 bzip2-libs autoconf libtool environment-modules make patch wget which libXext-devel m4 python git gcc gcc-c++"
+        packages="sudo tcl bzip2 bzip2-libs autoconf libtool environment-modules make patch wget which libXext-devel m4 python git gcc gcc-c++"
         $pacman -y install $packages
         source /etc/profile.d/modules.sh
 else

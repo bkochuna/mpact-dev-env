@@ -171,13 +171,25 @@ if [ $skip_gcc -eq 0 ]; then
 		wget -O compiler.patch https://gcc.gnu.org/git/?p=gcc.git\;a=patch\;h=14c2f22a1877f6b60a2f7c2f83ffb032759456a6
 		patch -f -p1 < compiler.patch
 		cd ../build_gcc
-		../gcc-${ver}-source/configure --disable-multilib --disable-libsanitizer --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}
-	else
-		../gcc-${ver}-source/configure --disable-multilib --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}
+	        cfg_opts="--disable-multilib --disable-libsanitizer --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}"
+        else
+                cfg_opts="--disable-multilib --enable-languages=c,c++,fortran --prefix=${install}/gcc-${ver}"
 	fi
 
-	make -j${build_procs}
-	make install
+        if ! ../gcc-${ver}-source/configure ${cfg_opts}; then
+                echo "There were errors configuring gcc"
+                exit 1
+        fi
+
+        if ! make -j${build_procs}; then
+                echo "There were errors building gcc"
+                exit 1
+        fi
+ 
+        if ! make install; then
+                echo "There were errors installing gcc"
+                exit 1
+        fi
 
 	# Set up env for mpich build
 	export PATH=${install}/gcc-${ver}/bin:$PATH
@@ -208,9 +220,20 @@ mkdir build_mpich
 cd build_mpich && rm -rf *
 
 #Build and install
-env CC=gcc CXX=g++ FC=gfortran ../mpich-${mpich_ver}-source/configure --prefix=${install}/mpich-${mpich_ver}
-make -j${build_procs}
-make install
+if ! env CC=gcc CXX=g++ FC=gfortran ../mpich-${mpich_ver}-source/configure --prefix=${install}/mpich-${mpich_ver}; then
+        echo "There were errors configuring mpich"
+        exit 1
+fi
+
+if ! make -j${build_procs}; then
+        echo "There were errors building mpich"
+        exit 1
+fi
+
+if ! make install; then
+        echo "There were errors installing mpich"
+        exit 1
+fi
 
 cd ${start_dir}
 
@@ -230,9 +253,20 @@ mkdir build_cmake
 cd build_cmake && rm -rf *
 
 # Build and install
-../cmake-${cmake_ver}-source/bootstrap --prefix=${common_install}/cmake-${cmake_ver}
-make -j${build_procs}
-make install
+if ! ../cmake-${cmake_ver}-source/bootstrap --prefix=${common_install}/cmake-${cmake_ver}; then
+        echo "There were errors configuring cmake"
+        exit 1
+fi
+
+if ! make -j${build_procs}; then
+        echo "There were errors building cmake"
+        exit 1
+fi
+
+if ! make install; then
+        echo "There were errors installing cmake"
+        exit 1
+fi
 
 export PATH=${common_install}/cmake-${cmake_ver}/bin:$PATH
 cd ${start_dir}
@@ -268,20 +302,12 @@ echo "prepend-path      LD_LIBRARY_PATH ${install}/mpich-${mpich_ver}/lib" >> $m
 
 mkdir -p $base_dir/gcc-${ver}/modules/devenv
 cp $moduleVer $base_dir/gcc-${ver}/modules/devenv
-module use $base_dir/gcc-${ver}/modules
-module load devenv/$moduleVer
+if ! module use $base_dir/gcc-${ver}/modules; then
+        echo "There are errors with the environment-modules installation"
+        exit 1
+fi
 
-## Make env load script
-#echo "#!/bin/sh" > gcc_env.sh
-#echo ""  >> gcc_env.sh
-#echo ""  >> gcc_env.sh
-#echo 'export PATH=${install}/gcc-${ver}/bin:$PATH' >>  gcc_env.sh
-#echo 'export PATH=${install}/mpich-${mpich_ver}/bin:$PATH' >>  gcc_env.sh
-#echo 'export PATH=${common_install}/cmake-${cmake_ver}/bin:$PATH' >> gcc_env.sh
-#echo 'export LD_LIBRARY_PATH=${install}/gcc-${gcc_ver}/lib64:$LD_LIBRARY_PATH' >>  gcc_env.sh
-#echo 'export LD_LIBRARY_PATH=${install}/mpich-${mpich_ver}/lib:$LD_LIBRARY_PATH' >>  gcc_env.sh
-#chmod 750 gcc_env.sh
-#source ./gcc_env.sh
+module load devenv/$moduleVer
 
 
 ##################
@@ -311,6 +337,11 @@ ${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} 
 #${start_dir}/vera_tpls/TPL_build/install_tpls.sh -DPROCS_INSTALL=${build_procs} -DCMAKE_INSTALL_PREFIX=${VERA_TPL_INSTALL_DIR} -D CMAKE_BUILD_TYPE:STRING=Debug -D TPL_LIST:STRING="BOOST;LAPACK;ZLIB;HDF5;NETCDF;SILO;PETSC;SLEPC;SUNDIALS;QT" -DENABLE_STATIC:BOOL=ON -DENABLE_SHARED:BOOL=OFF  2>&1 |tee install_tpls.out
 
 echo "Configuration has completed"
+echo "If you did not have the environment-modules package installed prior to running this script, enable it"
+echo "by running the following command:"
+echo ""
+echo "source /etc/profile.d/modules.sh"
+echo ""
 echo "To enable loading of the Dev Environment via modules, add the following line to your .bashrc:"
 echo ""
 echo "module use ${base_dir}/gcc-${ver}/modules"

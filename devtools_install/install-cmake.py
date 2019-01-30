@@ -45,8 +45,17 @@
 #
 
 cmakeBaseName = "cmake"
-cmakeDefaultVersion = "3.3.2"
-cmakeSupportedVersions = ["2.8.11", "3.1.1", "3.3.2", "3.4.0", "3.4.1", "3.4.3", "3.5.1", "3.6.2"]
+cmakeBaseURL  = "https://cmake.org/files/"
+cmakeDefaultVersion = "3.10.2"
+cmakeSupportedVersions = ["2.8.11", 
+                          "3.1.1", 
+                          "3.3.2",
+                          "3.4.0",
+                          "3.4.1",
+                          "3.4.3",
+                          "3.5.1",
+                          "3.6.2",
+                          "3.10.2"]
 cmakeTarballVersions = {
   "2.8.11" : "2.8.11.2",
   "3.1.1" : "3.1.1",
@@ -56,6 +65,7 @@ cmakeTarballVersions = {
   "3.4.3" : "3.4.3",
   "3.5.1" : "3.5.1",
   "3.6.2" : "3.6.2",
+  "3.10.2" : "3.10.2",
   }
 
 # NOTES:
@@ -65,7 +75,6 @@ cmakeTarballVersions = {
 #
 # Script code
 #
-
 
 from InstallProgramDriver import *
 from GeneralScriptSupport import *
@@ -97,6 +106,9 @@ class CMakeInstall:
   # command-line.
   #
 
+  def getURL(self, version):
+    return cmakeBaseURL+"v"+re.sub('\..$','',version)+"/"
+
   def getProductName(self, version):
     return cmakeBaseName+"-"+version
 
@@ -122,8 +134,23 @@ command --download-cmnd=<download-cmnd> is:
      cmake-<full-version>.tar.gz
 """
 
+  def setDownloadCmndOption(self, clp, version):
+    url = self.getURL(version)
+    productName = self.getProductBaseName()+"-"+version
+    productBaseDirName = productName+"-base"
+    productTarball = productName+".tar.gz"
+
+    defaultDownloadCmnd = \
+      "wget -P "+productBaseDirName+" "+url+productTarball
+    clp.add_option(
+      "--download-cmnd", dest="downloadCmnd", type="string",
+      default=defaultDownloadCmnd,
+      help="Command used to download source for "+productName+"." \
+        +"  (Default ='"+defaultDownloadCmnd+"')  WARNING: This will delete" \
+        +" an existing directory '"+productBaseDirName+"' if it already exists!")
+
   def injectExtraCmndLineOptions(self, clp, version):
-    setStdDownloadCmndOption(self, clp, version)
+    self.setDownloadCmndOption(clp, version)
     clp.add_option(
       "--extra-configure-options", dest="extraConfigureOptions", type="string", \
       default="", \

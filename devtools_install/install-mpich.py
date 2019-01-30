@@ -44,6 +44,7 @@ import sys
 # Defaults
 #
 mpichBaseName = "mpich"
+mpichBaseURL  = "http://www.mpich.org/static/downloads/"
 mpichDefaultVersion="3.1.3"
 mpichSupportedVersions = ["3.1.3", "3.2.1"]
 mpichTarballVersions = {
@@ -91,6 +92,9 @@ class MpichInstall:
   # command-line.
   #
 
+  def getURL(self, version):
+    return mpichBaseURL + version + "/"
+
   def getProductName(self, version):
     return mpichBaseName+"-"+version
 
@@ -110,8 +114,23 @@ command --download-cmnd=<download-cmnd> is:
      mpich-<version>.tar.gz
 """
 
+  def setDownloadCmndOption(self, clp, version):
+    url = self.getURL(version)
+    productName = self.getProductBaseName()+"-"+version
+    productBaseDirName = productName+"-base"
+    productTarball = productName+".tar.gz"
+
+    defaultDownloadCmnd = \
+      "wget -P "+productBaseDirName+" "+url+productTarball
+    clp.add_option(
+      "--download-cmnd", dest="downloadCmnd", type="string",
+      default=defaultDownloadCmnd,
+      help="Command used to download source for "+productName+"." \
+        +"  (Default ='"+defaultDownloadCmnd+"')  WARNING: This will delete" \
+        +" an existing directory '"+productBaseDirName+"' if it already exists!")
+
   def injectExtraCmndLineOptions(self, clp, version):
-    setStdDownloadCmndOption(self, clp, version)
+    self.setDownloadCmndOption(clp, version)
     clp.add_option(
       "--extra-configure-options", dest="extraConfigureOptions", type="string", \
       default="", \

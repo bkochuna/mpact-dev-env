@@ -44,13 +44,14 @@ import sys
 # Defaults
 #
 mvapichBaseName = "mvapich2"
-mvapichDefaultVersion="2.3"
-mvapichSupportedVersions = ["2.3", "2.3"]
+mvapichBaseURL  = "http://mvapich.cse.ohio-state.edu/download/mvapich/mv2/"
+mvapichDefaultVersion = "2.3"
+mvapichSupportedVersions = ["2.3"]
 mvapichTarballVersions = {
   "2.3" : "2.3"
   }
 for arg in sys.argv[1:]:
-  if "version" in arg and "mvapich" in arg:
+  if "version" in arg and "mvapich2" in arg:
     mvapichSupportedVersions.append(arg.split("=")[1])
     mvapichTarballVersions[arg.split("=")[1]] = arg.split("=")[1]
     break
@@ -90,6 +91,9 @@ class MvapichInstall:
   # command-line.
   #
 
+  def getURL(self, version):
+    return mvapichBaseURL
+
   def getProductName(self, version):
     return mvapichBaseName+"-"+version
 
@@ -109,8 +113,23 @@ command --download-cmnd=<download-cmnd> is:
      mvapich-<version>.tar.gz
 """
 
+  def setDownloadCmndOption(self, clp, version):
+    url = self.getURL(version)
+    productName = self.getProductBaseName()+"-"+version
+    productBaseDirName = productName+"-base"
+    productTarball = productName+".tar.gz"
+
+    defaultDownloadCmnd = \
+      "wget -P "+productBaseDirName+" "+url+productTarball
+    clp.add_option(
+      "--download-cmnd", dest="downloadCmnd", type="string",
+      default=defaultDownloadCmnd,
+      help="Command used to download source for "+productName+"." \
+        +"  (Default ='"+defaultDownloadCmnd+"')  WARNING: This will delete" \
+        +" an existing directory '"+productBaseDirName+"' if it already exists!")
+
   def injectExtraCmndLineOptions(self, clp, version):
-    setStdDownloadCmndOption(self, clp, version)
+    self.setDownloadCmndOption(clp, version)
     clp.add_option(
       "--extra-configure-options", dest="extraConfigureOptions", type="string", \
       default="", \
@@ -132,9 +151,9 @@ command --download-cmnd=<download-cmnd> is:
     self.baseDir = os.getcwd()
     self.mvapichBaseDir = self.baseDir+"/"+self.getBaseDirName(self.inOptions.version)
     mvapichVersionFull = mvapichTarballVersions[self.inOptions.version]
-    self.mvapichTarball = "mvapich-"+mvapichVersionFull+".tar.gz"
-    self.mvapichSrcDir = "mvapich-"+mvapichVersionFull
-    self.mvapichBuildBaseDir = self.mvapichBaseDir+"/mvapich-build"
+    self.mvapichTarball = "mvapich2-"+mvapichVersionFull+".tar.gz"
+    self.mvapichSrcDir = "mvapich2-"+mvapichVersionFull
+    self.mvapichBuildBaseDir = self.mvapichBaseDir+"/mvapich2-build"
     self.scriptBaseDir = getScriptBaseDir()
 
   #

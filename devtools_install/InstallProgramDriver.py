@@ -151,6 +151,12 @@ in order to remove the intermediate source and build files.
         " (default = /usr/local).  This can be a relative or absolute path, it can" \
         " start with ~/, etc." )
 
+    clp.add_option(
+      "--module-dir", dest="moduleDir", type="string",
+      help="The module file directory <module-dir> for "+productName+ \
+        " (default = <install_dir>). This can be a relative or absolute path, it can" \
+        " start with ~/, etc." )
+
     insertInstallPermissionsOptions(clp)
 
     clp.add_option(
@@ -188,7 +194,11 @@ in order to remove the intermediate source and build files.
     clp.add_option(
       "--install", dest="install", action="store_true", default=False,
       help="[ACTION] Install "+productName )
-    
+
+    clp.add_option(
+      "--generate-env-module", dest="writeModuleFile", action="store_true",
+      default=False, help="[ACTION] Generate Environment Module for "+productName )    
+
     clp.add_option(
       "--show-final-instructions", dest="showFinalInstructions", action="store_true",
       default=False,
@@ -200,7 +210,8 @@ in order to remove the intermediate source and build files.
       +" --show-final-instructions")
     
     (options, args) = clp.parse_args()
-     
+    if not options.moduleDir:
+      options.moduleDir = options.installDir
 
     #
     # 3) Echo the command-line options
@@ -208,10 +219,10 @@ in order to remove the intermediate source and build files.
 
     cmndLine = "******************************************************************************\n"
     cmndLine += scriptName + " \\\n"
-    cmndLine += "  "+versionCmndArgName + "='"+options.version+"' \\\n"
-    cmndLine += "  --install-dir='" + options.installDir + "' \\\n"
+    cmndLine += "  "+versionCmndArgName + "='"+options.version+"'\\\n"
+    cmndLine += "  --install-dir='" + options.installDir + "'\\\n"
     cmndLine += echoInsertPermissionsOptions(options)
-    cmndLine += "  --parallel='" + str(options.parallel) + "' \\\n"
+    cmndLine += "  --parallel='" + str(options.parallel) + "'\\\n"
     cmndLine += "  --make-options='" + options.makeOptions + "'\\\n"
     cmndLine += self.installObj.echoExtraCmndLineOptions(options)
     if options.download:
@@ -224,6 +235,9 @@ in order to remove the intermediate source and build files.
       cmndLine += "  --build \\\n"
     if options.install:
       cmndLine += "  --install \\\n"
+    if options.writeModuleFile:
+      cmndLine += "  --generate-env-module \\\n"
+      cmndLine += "  --module-dir='" + options.moduleDir + "'\\\n"
     if options.showFinalInstructions:
       cmndLine += "  --show-final-instructions \\\n"
     if options.doAll:
@@ -250,6 +264,7 @@ in order to remove the intermediate source and build files.
       options.configure = True
       options.build = True
       options.install = True
+      options.writeModuleFile = True
       options.showFinalInstructions = True
     
     baseDir = os.getcwd()
@@ -312,9 +327,18 @@ in order to remove the intermediate source and build files.
     else:
       print("Skipping on request ...")
     
+    print("")
+    print("F) Write module file "+productName+" ...")
+    print("")
+
+    if options.writeModuleFile:
+      print(options.ModuleDir)
+      self.installObj.writeModuleFile()
+    else:
+      print("Skipping on request ...")
     
     print("")
-    print("D) Final instructions for using "+productName+" ...")
+    print("G) Final instructions for using "+productName+" ...")
     print("")
     
     if options.showFinalInstructions:
@@ -340,7 +364,7 @@ def setStdDownloadCmndOption(installObj, clp, version):
     help="Command used to download source for "+productName+"." \
       +"  (Default ='"+defaultDownloadCmnd+"')  WARNING: This will delete" \
       +" an existing directory '"+productBaseDirName+"' if it already exists!")
-
+  print(defaultDownloadCmnd)
 #
 # Get the parallel option
 #

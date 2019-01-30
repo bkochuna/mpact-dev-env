@@ -43,10 +43,13 @@
 # Version info that will change with new versions
 #
 
-openmpiVersion = "1.4.3"
-openmpiTarball = "openmpi-"+openmpiVersion+".tar.gz"
-openmpiSrcDir = "openmpi-"+openmpiVersion
-
+openmpiBaseName = "openmpi"
+openmpiBaseURL = "https://download.open-mpi.org/release/open-mpi/"
+openmpiDefaultVersion = "1.4.3"
+openmpiSupportVersions = ["1.4.3"]
+openmpiTarballVersions = {
+  "1.4.3" : "1.4.3"
+  }
 
 #
 # Script code

@@ -45,6 +45,7 @@
 #
 
 autoconfBaseName = "autoconf"
+autoconfBaseURL  = "http://ftp.gnu.org/gnu/autoconf/"
 autoconfDefaultVersion = "2.69"
 autoconfSupportedVersions = ["2.69"]
 autoconfTarballVersions = {
@@ -86,6 +87,9 @@ class AutoconfInstall:
   # command-line.
   #
 
+  def getURL(self, version):
+    return autoconfBaseURL
+
   def getProductName(self, version):
     return autoconfBaseName+"-"+version
 
@@ -104,8 +108,23 @@ command --download-cmnd=<download-cmnd> is:
      autoconf-<full-version>.tar.gz
 """
 
+  def setDownloadCmndOption(self, clp, version):
+    url = self.getURL(version)
+    productName = self.getProductBaseName()+"-"+version
+    productBaseDirName = productName+"-base"
+    productTarball = productName+".tar.gz"
+    
+    defaultDownloadCmnd = \
+      "wget -P "+productBaseDirName+" "+url+productTarball
+    clp.add_option(
+      "--download-cmnd", dest="downloadCmnd", type="string",
+      default=defaultDownloadCmnd,
+      help="Command used to download source for "+productName+"." \
+        +"  (Default ='"+defaultDownloadCmnd+"')  WARNING: This will delete" \
+        +" an existing directory '"+productBaseDirName+"' if it already exists!")
+
   def injectExtraCmndLineOptions(self, clp, version):
-    setStdDownloadCmndOption(self, clp, version)
+    self.setDownloadCmndOption(clp, version)
     clp.add_option(
       "--extra-configure-options", dest="extraConfigureOptions", type="string", \
       default="", \
@@ -163,6 +182,20 @@ command --download-cmnd=<download-cmnd> is:
     echoChDir(self.autoconfBuildBaseDir)
     echoRunSysCmnd("make " + getParallelOpt(self.inOptions, "-j") \
       + self.inOptions.makeOptions + " install")
+
+  def writeModuleFile(self):
+    print(self.inOptions.installDir)
+#        cmake_module = open(dev_env_dir + "/cmake-" + cmake_version, 'w+')
+#        cmake_module.write("#%Module\n\n")
+#        cmake_module.write("set version " + cmake_version + "\n")
+#        cmake_module.write('set name "MPACT Development Environment - 2.1.0"\n')
+#        cmake_module.write('set msg "Loads the development environment for MPACT."\n')
+#        cmake_module.write('\n')
+#        cmake_module.write("procs ModulesHelp { } {\n")
+#        cmake_module.write(" puts stderr $msg }\n\n")
+#        cmake_module.write("module-whatis $msg\n")
+#        cmake_module.write(common_tools_dir + "cmake-$version/bin\n")
+#        cmake_module.close() 
 
   def getFinalInstructions(self):
     return """

@@ -45,6 +45,7 @@
 #
 
 gitBaseName = "git"
+gitBaseURL  = "https://github.com/git/git/archive/"
 gitDefaultVersion = "2.6.4"
 gitSupportedVersions = ["2.6.4"]
 gitTarballVersions = {
@@ -87,6 +88,9 @@ class GitInstall:
   # command-line.
   #
 
+  def getURL(self, version):
+    return gitBaseURL
+
   def getProductName(self, version):
     return gitBaseName+"-"+version
 
@@ -122,8 +126,23 @@ command --download-cmnd=<download-cmnd> is:
      git-<full-version>.tar.gz
 """
 
+  def setDownloadCmndOption(self, clp, version):
+    url = self.getURL(version)
+    productName = self.getProductBaseName()+"-"+version
+    productBaseDirName = productName+"-base"
+    productTarball = "v"+version+".tar.gz"
+
+    defaultDownloadCmnd = \
+      "wget -P "+productBaseDirName+" "+url+productTarball
+    clp.add_option(
+      "--download-cmnd", dest="downloadCmnd", type="string",
+      default=defaultDownloadCmnd,
+      help="Command used to download source for "+productName+"." \
+        +"  (Default ='"+defaultDownloadCmnd+"')  WARNING: This will delete" \
+        +" an existing directory '"+productBaseDirName+"' if it already exists!")
+
   def injectExtraCmndLineOptions(self, clp, version):
-    setStdDownloadCmndOption(self, clp, version)
+    self.setDownloadCmndOption(clp, version)
     clp.add_option(
       "--extra-configure-options", dest="extraConfigureOptions", type="string", \
       default="", \

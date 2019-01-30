@@ -45,6 +45,7 @@ import sys
 #    
 
 gccBaseName = "gcc"
+gccBaseURL  = "https://ftp.gnu.org/gnu/gcc/"
 gccDefaultVersion = "4.8.3"
 gccSupportedVersions = ["4.8.3"]
 
@@ -91,6 +92,10 @@ class GccInstall:
   # command-line.
   #
 
+  def getURL(self, version):
+    url = gccBaseURL+gccBaseName+"-"+version+"/"
+    return url
+
   def getProductName(self, version):
     return gccBaseName+"-"+version
 
@@ -109,8 +114,23 @@ command --download-cmnd=<download-cmnd> is:
      gcc-<full-version>.tar.gz
 """
 
+  def setDownloadCmndOption(self, clp, version):
+    url = self.getURL(version)
+    productName = self.getProductBaseName()+"-"+version
+    productBaseDirName = productName+"-base"
+    productTarball = productName+".tar.gz"
+
+    defaultDownloadCmnd = \
+      "wget -P "+productBaseDirName+" "+url+productTarball
+    clp.add_option(
+      "--download-cmnd", dest="downloadCmnd", type="string",
+      default=defaultDownloadCmnd,
+      help="Command used to download source for "+productName+"." \
+        +"  (Default ='"+defaultDownloadCmnd+"')  WARNING: This will delete" \
+        +" an existing directory '"+productBaseDirName+"' if it already exists!")
+
   def injectExtraCmndLineOptions(self, clp, version):
-    setStdDownloadCmndOption(self, clp, version)
+    self.setDownloadCmndOption(clp, version)
     clp.add_option(
       "--extra-configure-options", dest="extraConfigureOptions", type="string", \
       default="", \

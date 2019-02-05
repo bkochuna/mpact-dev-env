@@ -385,7 +385,7 @@ def runSysCmndInterface(cmnd, outFile=None, rtnOutput=False, extraEnv=None, \
   if g_dumpAllSysCmnds:
     print("\nDUMP SYS CMND: " + cmnd + "\n")
   if outFile!=None and rtnOutput==True:
-    raise Exception("Error, both outFile and rtnOutput can not be true!") 
+    raise Exception("Error, both outFile and rtnOutput can not be true!")
   if g_sysCmndInterceptor.doProcessInterceptedCmnd(cmnd):
     (cmndReturn, cmndOutput) = g_sysCmndInterceptor.nextInterceptedCmndStruct(cmnd)
     if rtnOutput:
@@ -394,7 +394,7 @@ def runSysCmndInterface(cmnd, outFile=None, rtnOutput=False, extraEnv=None, \
                         " non-null output was expected!")
       return (cmndOutput, cmndReturn)
     if outFile:
-      writeStrToFile(outFile, cmndOutput)  
+      writeStrToFile(outFile, cmndOutput)
     return cmndReturn
   # Else, fall through
   if extraEnv:
@@ -512,9 +512,9 @@ def pidStillRunning(pid):
 
 
 ######################################
-# File/path utilities 
+# File/path utilities
 ######################################
-     
+
 
 def getFilePathArray(filePathStr):
   return filePathStr.split('/')
@@ -669,7 +669,7 @@ def getRelativePathFrom1to2(absPath1, absPath2):
   #print("\nabsPath2_array =" + absPath2_array)
   absPath1_array_len = len(absPath1_array)
   absPath2_array_len = len(absPath2_array)
-  maxBaseDirDepth = min(absPath1_array_len, absPath2_array_len) 
+  maxBaseDirDepth = min(absPath1_array_len, absPath2_array_len)
   baseDirDepth = 0
   for dirIdx in range(0, maxBaseDirDepth):
     dir1 = absPath1_array[dirIdx]
@@ -835,7 +835,7 @@ class ConfigurableOptionParser(optparse.OptionParser):
 def printStackTrace():
   sys.stdout.flush()
   traceback.print_exc()
-    
+
 
 class ErrorCaptureOptionParser(optparse.OptionParser):
   __sawError = None
@@ -932,4 +932,4 @@ def createHtmlBrowserFiles(absBaseDir, depth, verbose=False):
         createHtmlBrowserFiles(absBaseDir+"/"+fd,depth-1)
 
   #print("\nLeaving createHtmlBrowserFiles(" + absBaseDir + ",%d" % (depth) +
-  #      ")") 
+  #      ")")

@@ -146,7 +146,7 @@ command --download-cmnd=<download-cmnd> is:
   #
   # Called after parsing the command-line
   #
-    
+
   def setup(self, inOptions):
     self.inOptions = inOptions
     self.baseDir = os.getcwd()
@@ -192,22 +192,78 @@ command --download-cmnd=<download-cmnd> is:
     echoRunSysCmnd("make " + getParallelOpt(self.inOptions, "-j") \
       + self.inOptions.makeOptions + " install")
 
+  def writeModuleFile(self):
+    moduleDir = self.inOptions.moduleDir+"/"+self.getProductBaseName()+"/"
+    createDir(moduleDir, False, True)
+    if self.inOptions.depModules:
+      for m in self.inOptions.depModules:
+        if "gcc" in m:
+          compiler = m
+          break
+      module_file = open(moduleDir + self.inOptions.version + \
+        "-"+compiler.replace("/","-"), 'w+')
+    else:
+      module_file = open(moduleDir + self.inOptions.version, 'w+')
+
+    module_file.write("#%Module\n\n")
+
+    #Always conflicts with itself
+    module_file.write("conflict mpi\n")
+    module_file.write("conflict openmpi\n")
+    module_file.write("conflict mvapich\n")
+    module_file.write("conflict " + self.getProductBaseName() + "\n\n")
+
+    #Prerequisites
+    if self.inOptions.depModules:
+       for m in self.inOptions.depModules:
+         if "gcc" in m:
+           module_file.write("if ![ is-loaded '"+m+"' ] {\n")
+           module_file.write(" module load "+m+"\n")
+           module_file.write("}\n\n")
+           break
+
+    #Standard pre-amble/script variables
+    root = self.inOptions.installDir.replace( \
+      self.getProductBaseName()+"-"+self.inOptions.version,"")
+    module_file.write("set  root      " + root + "\n")
+    module_file.write("set  version   " + self.inOptions.version + "\n")
+    module_file.write("set  app       " + self.getProductBaseName()  + "\n")
+    module_file.write("set  modroot   $root/$app-$version\n\n")
+
+    #How environment needs to modified (package specific)
+    module_file.write("prepend-path   MANPATH         $modroot/share/doc/mpich\n")
+    module_file.write("prepend-path   PATH            $modroot/bin\n")
+    module_file.write("prepend-path   LD_LIBRARY_PATH $modroot/lib\n")
+    module_file.write("setenv         MPI_HOME        $modroot\n")
+    module_file.write("setenv         MPI_BIN         $modroot/bin\n")
+    module_file.write("setenv         MPI_LIB         $modroot/lib\n")
+    module_file.write("setenv         MPI_INCLUDE     $modroot/include\n")
+    module_file.write("setenv         MPI_MAN         $modroot/share/man\n")
+    module_file.write("setenv         PKG_CONFIG_PATH $modroot/lib/pkgconfig\n")
+
+    #Standard help
+    module_file.write("proc ModulesHelp { } {\n")
+    module_file.write("    puts stderr \" Loads $name-$version as a part of the MPACT development environment.\"\n" + \
+      "}\n\n")
+
+    #More info
+    module_file.write("module-whatis \"MPICH is a high performance and widely " + \
+      "portable implementation of the Message Passing Interface (MPI) standard." + \
+      "\"\n")
+    module_file.write("module-whatis \"Vendor Website: https://www.mpich.org/\"\n")
+    module_file.write("module-whatis \"        Manual: https://www.mpich.org/documentation/guides/\"\n")
+
+    module_file.close()
+
   def getFinalInstructions(self):
     return """
-To use the installed version of mpich-"""+self.inOptions.version+""" add the path:
+    To use the installed version of """+self.getProductBaseName()+"""-"""+ \
+      self.inOptions.version+""" with environment modules
+    modify your MODULEPATH environment variable from the command line with:
 
-  """+self.inOptions.installDir+"""/bin
+    $ export MODULEPATH="""+self.inOptions.moduleDir+""":$MODULEPATH
 
-to your path and that should be it!
-
-Also, when you link shared libs or executables, pass in:
-
-   -Wl,-rpath,"""+self.inOptions.installDir+"""/lib[64]
-
-That will make it so that you don't need to add this MPICH libs to your
-LD_LIBRARY_PATH.
-"""
-
+    Or modify your .bashrc (or other login script) and that should be it!"""
 
 #
 # Executable statements

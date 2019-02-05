@@ -113,7 +113,7 @@ command --download-cmnd=<download-cmnd> is:
     productName = self.getProductBaseName()+"-"+version
     productBaseDirName = productName+"-base"
     productTarball = productName+".tar.gz"
-    
+
     defaultDownloadCmnd = \
       "wget -P "+productBaseDirName+" "+url+productTarball
     clp.add_option(
@@ -140,7 +140,7 @@ command --download-cmnd=<download-cmnd> is:
   #
   # Called after parsing the command-line
   #
-    
+
   def setup(self, inOptions):
     self.inOptions = inOptions
     self.baseDir = os.getcwd()
@@ -184,27 +184,49 @@ command --download-cmnd=<download-cmnd> is:
       + self.inOptions.makeOptions + " install")
 
   def writeModuleFile(self):
-    print(self.inOptions.installDir)
-#        cmake_module = open(dev_env_dir + "/cmake-" + cmake_version, 'w+')
-#        cmake_module.write("#%Module\n\n")
-#        cmake_module.write("set version " + cmake_version + "\n")
-#        cmake_module.write('set name "MPACT Development Environment - 2.1.0"\n')
-#        cmake_module.write('set msg "Loads the development environment for MPACT."\n')
-#        cmake_module.write('\n')
-#        cmake_module.write("procs ModulesHelp { } {\n")
-#        cmake_module.write(" puts stderr $msg }\n\n")
-#        cmake_module.write("module-whatis $msg\n")
-#        cmake_module.write(common_tools_dir + "cmake-$version/bin\n")
-#        cmake_module.close() 
+    module_file = open(self.inOptions.moduleDir + \
+      "/" + self.getProductBaseName() + "-" + self.inOptions.version, 'w+')
+    module_file.write("#%Module\n\n")
+
+    #Always conflicts with itself
+    module_file.write("conflict " + self.getProductBaseName() + "\n\n")
+
+    #Prerequisites
+    #TODO: Figure out how to handle...
+
+    #Standard pre-amble/script variables
+    module_file.write("set  root      " + self.inOptions.installDir + "\n")
+    module_file.write("set  version   " + self.inOptions.version + "\n")
+    module_file.write("set  app       " + self.getProductBaseName()  + "\n")
+    module_file.write("set  modroot   $root/$app-$version\n\n")
+
+    #How environment needs to modified (package specific)
+    module_file.write("prepend-path   MANPATH         $modroot/share/man\n")
+    module_file.write("prepend-path   PATH            $modroot/bin\n")
+
+    #Standard help
+    module_file.write("proc ModulesHelp { } {\n")
+    module_file.write("    puts stderr \" Loads $name-$version as a part of the MPACT development environment.\"\n" + \
+      "}\n\n")
+
+    #More info
+    module_file.write("module-whatis \"" + \
+      "Autoconf is an extensible package of M4 macros that produce " + \
+      "shell scripts to automatically configure software source code packages." + \
+      "\"\n")
+    module_file.write("module-whatis \"Vendor Website: https://www.gnu.org/software/autoconf/\"\n")
+    module_file.write("module-whatis \"        Manual: https://www.gnu.org/software/autoconf/manual/index.html\"\n")
+
+    module_file.close()
 
   def getFinalInstructions(self):
     return """
-To use the installed version of autoconf-"""+self.inOptions.version+""" add the path:
+    To use the installed version of autoconf-2.69 with environment modules
+    modify your MODULEPATH environment variable from the command line with:
 
-  """+self.inOptions.installDir+"""/bin
+    $ export MODULEPATH="""+self.inOptions.moduleDir+""":$MODULEPATH
 
-to your path and that should be it!
-"""
+    Or modify your .bashrc (or other login script) and that should be it!"""
 
 
 #

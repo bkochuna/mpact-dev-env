@@ -164,16 +164,16 @@ command --download-cmnd=<download-cmnd> is:
   #
   # Called after parsing the command-line
   #
-    
+
   def setup(self, inOptions):
     self.inOptions = inOptions
     self.baseDir = os.getcwd()
     self.gitBaseDir = self.baseDir+"/"+self.getBaseDirName(self.inOptions.version)
     gitVersionFull = gitTarballVersions[self.inOptions.version]
-    self.gitTarball = "git-"+gitVersionFull+".tar.gz"
+    self.gitTarball = "v"+gitVersionFull+".tar.gz"
     self.gitSrcDir = "git-"+gitVersionFull
     self.gitSrcBuildDir = self.gitBaseDir+"/"+self.gitSrcDir
-    self.gitSubtreeSrcBuildDir = self.gitSrcBuildDir+"/contrib/subtree" 
+    self.gitSubtreeSrcBuildDir = self.gitSrcBuildDir+"/contrib/subtree"
     self.scriptBaseDir = getScriptBaseDir()
 
   #
@@ -227,14 +227,54 @@ command --download-cmnd=<download-cmnd> is:
     if self.inOptions.withDoc:
       echoRunSysCmnd("make "+self.inOptions.makeOptions+" install-doc")
 
+  def writeModuleFile(self):
+    module_file = open(self.inOptions.moduleDir + \
+      "/" + self.getProductBaseName() + "-" + self.inOptions.version, 'w+')
+    module_file.write("#%Module\n\n")
+
+    #Always conflicts with itself
+    module_file.write("conflict " + self.getProductBaseName() + "\n\n")
+
+    #Prerequisites
+    #TODO: Figure out how to handle...
+
+    #Standard pre-amble/script variables
+    root = self.inOptions.installDir.replace( \
+      self.getProductBaseName()+"-"+self.inOptions.version,"")
+    module_file.write("set  root      " + root + "\n")
+    module_file.write("set  version   " + self.inOptions.version + "\n")
+    module_file.write("set  app       " + self.getProductBaseName()  + "\n")
+    module_file.write("set  modroot   $root/$app-$version\n\n")
+
+    #How environment needs to modified (package specific)
+    module_file.write("prepend-path   MANPATH         $modroot/share/man\n")
+    module_file.write("prepend-path   PATH            $modroot/bin\n")
+
+    #Standard help
+    module_file.write("proc ModulesHelp { } {\n")
+    module_file.write("    puts stderr \" Loads $name-$version as a part of the MPACT development environment.\"\n" + \
+      "}\n\n")
+
+    #More info
+    module_file.write("module-whatis \"" + \
+      "Git is a free and open source distributed version control system designed " + \
+      "to handle everything from small to very large projects with speed and efficiency." + \
+      "\"\n")
+    module_file.write("module-whatis \"Vendor Website: https://git-scm.com/\"\n")
+    module_file.write("module-whatis \"        Manual: https://git-scm.com/docs\"\n")
+
+    module_file.close()
+
   def getFinalInstructions(self):
     return """
-To use the installed version of git-"""+self.inOptions.version+""" add the path:
+    To use the installed version of """+self.getProductBaseName()+"""-"""+ \
+      self.inOptions.version+"""with environment modules
+    modify your MODULEPATH environment variable from the command line with:
 
-  """+self.inOptions.installDir+"""/bin
+    $ export MODULEPATH="""+self.inOptions.moduleDir+""":$MODULEPATH
 
-to your path and that should be it!
-"""
+    Or modify your .bashrc (or other login script) and that should be it!"""
+
 
 #
 # Executable statements

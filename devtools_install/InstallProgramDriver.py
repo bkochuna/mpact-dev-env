@@ -200,6 +200,11 @@ in order to remove the intermediate source and build files.
       default=False, help="[ACTION] Generate Environment Module for "+productName )
 
     clp.add_option(
+      "--dependent-env-modules", dest="depModules", type="string",
+      help="List of environment modules that should be loaded for the "+ \
+        productName + "module.")
+
+    clp.add_option(
       "--show-final-instructions", dest="showFinalInstructions", action="store_true",
       default=False,
       help="[ACTION] Show final instructions for using "+productName )
@@ -237,7 +242,12 @@ in order to remove the intermediate source and build files.
       cmndLine += "  --install \\\n"
     if options.writeModuleFile:
       cmndLine += "  --generate-env-module \\\n"
+    if options.moduleDir:
       cmndLine += "  --module-dir='" + options.moduleDir + "'\\\n"
+    if options.depModules:
+      cmndLine += "  --dependent-env-modules='" + options.depModules + "'\\\n"
+      #Convert to list
+      options.depModules = [x.strip() for x in options.depModules.split(",")]
     if options.showFinalInstructions:
       cmndLine += "  --show-final-instructions \\\n"
     if options.doAll:
@@ -270,6 +280,8 @@ in order to remove the intermediate source and build files.
     baseDir = os.getcwd()
 
     productBaseDir = baseDir+"/"+baseDirName
+
+
 
     self.installObj.setup(options)
 

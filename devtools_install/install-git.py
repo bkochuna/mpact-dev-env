@@ -269,7 +269,7 @@ command --download-cmnd=<download-cmnd> is:
   def getFinalInstructions(self):
     return """
     To use the installed version of """+self.getProductBaseName()+"""-"""+ \
-      self.inOptions.version+"""with environment modules
+      self.inOptions.version+""" with environment modules
     modify your MODULEPATH environment variable from the command line with:
 
     $ export MODULEPATH="""+self.inOptions.moduleDir+""":$MODULEPATH

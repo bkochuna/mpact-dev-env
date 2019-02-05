@@ -345,6 +345,7 @@ in order to remove the intermediate source and build files.
 
     if options.writeModuleFile:
       self.installObj.writeModuleFile()
+      fixupInstallPermissions(options, options.installDir)
     else:
       print("Skipping on request ...")
 

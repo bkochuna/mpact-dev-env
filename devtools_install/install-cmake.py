@@ -215,8 +215,10 @@ command --download-cmnd=<download-cmnd> is:
     echoRunSysCmnd("make "+self.inOptions.makeOptions+" install")
 
   def writeModuleFile(self):
-    module_file = open(self.inOptions.moduleDir + \
-      "/" + self.getProductBaseName() + "-" + self.inOptions.version, 'w+')
+    moduleDir = self.inOptions.moduleDir+"/"+self.getProductBaseName()+"/"
+    createDir(moduleDir, False, True)
+    module_file = open(moduleDir + "/" + self.inOptions.version, 'w+')
+
     module_file.write("#%Module\n\n")
 
     #Always conflicts with itself

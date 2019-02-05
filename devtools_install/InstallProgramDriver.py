@@ -332,7 +332,8 @@ in order to remove the intermediate source and build files.
     print("")
 
     if options.writeModuleFile:
-      print("Writing module file: "+options.moduleDir+"/"+productName+"\n")
+      print("Writing module file: "+options.moduleDir+"/"+ \
+         self.installObj.getProductBaseName()+"/"+options.version+"\n")
       self.installObj.writeModuleFile()
     else:
       print("Skipping on request ...")

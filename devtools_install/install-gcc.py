@@ -42,12 +42,19 @@ import sys
 
 #
 # Defaults
-#    
+#
 
 gccBaseName = "gcc"
 gccBaseURL  = "https://ftp.gnu.org/gnu/gcc/"
-gccDefaultVersion = "4.8.3"
-gccSupportedVersions = ["4.8.3"]
+gccDefaultVersion = "5.4.0"
+gccSupportedVersions = ["4.8.3",
+                        "4.8.5",
+                        "5.4.0"]
+gccTarballVersions = {
+  "4.8.3" : "4.8.3",
+  "4.8.5" : "4.8.5",
+  "5.4.0" : "5.4.0",
+  }
 
 
 #allows for any user-specified version of gcc to be installed --EHC
@@ -55,7 +62,7 @@ for arg in sys.argv[1:]:
   if "version" in arg and "gcc" in arg:
     gccSupportedVersions.append(arg.split("=")[1])
     break
-    
+
 
 #
 # Script code
@@ -147,14 +154,16 @@ command --download-cmnd=<download-cmnd> is:
   #
   # Called after parsing the command-line
   #
-    
+
   def setup(self, inOptions):
     self.inOptions = inOptions
     self.baseDir = os.getcwd()
     self.gccBaseDir = self.baseDir+"/"+self.getBaseDirName(self.inOptions.version)
-    self.gccSrcDir = "gcc-"+self.inOptions.version
+    gccVersionFull = gccTarballVersions[self.inOptions.version]
+    self.gccSrcDir = "gcc-"+gccVersionFull
     self.gccBuildBaseDir = self.gccBaseDir+"/gcc-build"
     self.scriptBaseDir = getScriptBaseDir()
+    self.gccTarball = "gcc-"+gccVersionFull+".tar.gz"
 
   #
   # Called after setup()
@@ -165,7 +174,8 @@ command --download-cmnd=<download-cmnd> is:
     echoRunSysCmnd(self.inOptions.downloadCmnd)
 
   def doUntar(self):
-    print "Nothing to untar!"
+     echoChDir(self.gccBaseDir)
+     echoRunSysCmnd("tar -xzf "+self.gccTarball)
 
   def doConfigure(self):
     createDir(self.gccBuildBaseDir)
@@ -187,21 +197,54 @@ command --download-cmnd=<download-cmnd> is:
     echoRunSysCmnd("make " + getParallelOpt(self.inOptions, "-j") \
       + self.inOptions.makeOptions + " install")
 
+  def writeModuleFile(self):
+    moduleDir = self.inOptions.moduleDir+"/"+self.getProductBaseName()+"/"
+    createDir(moduleDir, False, True)
+    module_file = open(moduleDir + "/" + self.inOptions.version, 'w+')
+    module_file.write("#%Module\n\n")
+
+    #Always conflicts with itself
+    module_file.write("conflict " + self.getProductBaseName() + "\n\n")
+
+    #Prerequisites
+    #TODO: Figure out how to handle...
+
+    #Standard pre-amble/script variables
+    root = self.inOptions.installDir.replace( \
+      self.getProductBaseName()+"-"+self.inOptions.version,"")
+    module_file.write("set  root      " + root + "\n")
+    module_file.write("set  version   " + self.inOptions.version + "\n")
+    module_file.write("set  app       " + self.getProductBaseName()  + "\n")
+    module_file.write("set  modroot   $root/$app-$version\n\n")
+
+    #How environment needs to modified (package specific)
+    module_file.write("prepend-path   MANPATH         $modroot/share/man\n")
+    module_file.write("prepend-path   PATH            $modroot/bin\n")
+    module_file.write("prepend-path   LD_LIBRARY_PATH $modroot/lib\n")
+
+    #Standard help
+    module_file.write("proc ModulesHelp { } {\n")
+    module_file.write("    puts stderr \" Loads $name-$version as a part of the MPACT development environment.\"\n" + \
+      "}\n\n")
+
+    #More info
+    module_file.write("module-whatis \"GNU compiler collection " + \
+      "includes front ends for C, C++, Objective-C, Fortran, Ada, Go, and D, " + \
+      "as well as libraries for these languages (libstdc++,...).\"\n")
+    module_file.write("module-whatis \"Vendor Website: https://gcc.gnu.org/\"\n")
+    module_file.write("module-whatis \"        Manual: https://gcc.gnu.org/onlinedocs/\"\n")
+
+    module_file.close()
+
   def getFinalInstructions(self):
     return """
-To use the installed version of gcc-"""+self.inOptions.version+""" add the path:
+    To use the installed version of """+self.getProductBaseName()+"""-"""+ \
+      self.inOptions.version+"""with environment modules
+    modify your MODULEPATH environment variable from the command line with:
 
-  """+self.inOptions.installDir+"""/bin
+    $ export MODULEPATH="""+self.inOptions.moduleDir+""":$MODULEPATH
 
-to your path and that should be it!
-
-Also, when you link shared libs or executables, pass in:
-
-   -Wl,-rpath,"""+self.inOptions.installDir+"""/lib[64]
-
-That will make it so that you don't need to add this GCC libs to your
-LD_LIBRARY_PATH.
-"""
+    Or modify your .bashrc (or other login script) and that should be it!"""
 
 
 #

@@ -195,7 +195,9 @@ command --download-cmnd=<download-cmnd> is:
     #TODO: Figure out how to handle...
 
     #Standard pre-amble/script variables
-    module_file.write("set  root      " + self.inOptions.installDir + "\n")
+    root = self.inOptions.installDir.replace( \
+      self.getProductBaseName()+"-"+self.inOptions.version,"")
+    module_file.write("set  root      " + root + "\n")
     module_file.write("set  version   " + self.inOptions.version + "\n")
     module_file.write("set  app       " + self.getProductBaseName()  + "\n")
     module_file.write("set  modroot   $root/$app-$version\n\n")
@@ -221,7 +223,8 @@ command --download-cmnd=<download-cmnd> is:
 
   def getFinalInstructions(self):
     return """
-    To use the installed version of autoconf-2.69 with environment modules
+    To use the installed version of """+self.getProductBaseName()+"""-"""+ \
+      self.inOptions.version+"""with environment modules
     modify your MODULEPATH environment variable from the command line with:
 
     $ export MODULEPATH="""+self.inOptions.moduleDir+""":$MODULEPATH

@@ -568,7 +568,7 @@ def createDir(dirName, cdIntoDir=False, verbose=False):
                "'already exists but it is not a directory!"
       if verbose: print(errMsg)
       raise RuntimeError(errMsg)
-    if verbose: print("\nThe directory " + dirName + "already exists!")
+    if verbose: print("\nThe directory " + dirName + " already exists!")
   else:
     if verbose: print("\nCreating directory " + dirName + " ...")
     os.mkdir(dirName)

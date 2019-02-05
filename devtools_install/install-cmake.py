@@ -47,8 +47,8 @@
 cmakeBaseName = "cmake"
 cmakeBaseURL  = "https://cmake.org/files/"
 cmakeDefaultVersion = "3.10.2"
-cmakeSupportedVersions = ["2.8.11", 
-                          "3.1.1", 
+cmakeSupportedVersions = ["2.8.11",
+                          "3.1.1",
                           "3.3.2",
                           "3.4.0",
                           "3.4.1",
@@ -166,7 +166,7 @@ command --download-cmnd=<download-cmnd> is:
   #
   # Called after parsing the command-line
   #
-    
+
   def setup(self, inOptions):
     self.inOptions = inOptions
     self.baseDir = os.getcwd()
@@ -214,14 +214,52 @@ command --download-cmnd=<download-cmnd> is:
     echoChDir(self.cmakeBuildBaseDir)
     echoRunSysCmnd("make "+self.inOptions.makeOptions+" install")
 
+  def writeModuleFile(self):
+    module_file = open(self.inOptions.moduleDir + \
+      "/" + self.getProductBaseName() + "-" + self.inOptions.version, 'w+')
+    module_file.write("#%Module\n\n")
+
+    #Always conflicts with itself
+    module_file.write("conflict " + self.getProductBaseName() + "\n\n")
+
+    #Prerequisites
+    #TODO: Figure out how to handle...
+
+    #Standard pre-amble/script variables
+    root = self.inOptions.installDir.replace( \
+      self.getProductBaseName()+"-"+self.inOptions.version,"")
+    module_file.write("set  root      " + root + "\n")
+    module_file.write("set  version   " + self.inOptions.version + "\n")
+    module_file.write("set  app       " + self.getProductBaseName()  + "\n")
+    module_file.write("set  modroot   $root/$app-$version\n\n")
+
+    #How environment needs to modified (package specific)
+    module_file.write("prepend-path   PATH            $modroot/bin\n")
+
+    #Standard help
+    module_file.write("proc ModulesHelp { } {\n")
+    module_file.write("    puts stderr \" Loads $name-$version as a part of the MPACT development environment.\"\n" + \
+      "}\n\n")
+
+    #More info
+    module_file.write("module-whatis \"" + \
+      "CMake is an open-source, cross-platform family of tools designed to build," + \
+      "test and package software." + \
+      "\"\n")
+    module_file.write("module-whatis \"Vendor Website: https://cmake.org/\"\n")
+    module_file.write("module-whatis \"        Manual: https://cmake.org/documentation/\"\n")
+
+    module_file.close()
+
   def getFinalInstructions(self):
     return """
-To use the installed version of cmake-"""+self.inOptions.version+""" add the path:
+    To use the installed version of """+self.getProductBaseName()+"""-"""+ \
+      self.inOptions.version+"""with environment modules
+    modify your MODULEPATH environment variable from the command line with:
 
-  """+self.inOptions.installDir+"""/bin
+    $ export MODULEPATH="""+self.inOptions.moduleDir+""":$MODULEPATH
 
-to your path and that should be it!
-"""
+    Or modify your .bashrc (or other login script) and that should be it!"""
 
 
 #

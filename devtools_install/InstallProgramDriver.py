@@ -64,7 +64,7 @@ class InstallProgramDriver:
 
     productBaseName = self.installObj.getProductBaseName()
 
-    versionCmndArgName = "--"+productBaseName+"-version"    
+    versionCmndArgName = "--"+productBaseName+"-version"
     for arg in sys.argv[1:]:
       #print("arg = '"+arg+"'")
       arg_and_value = arg.split("=")
@@ -81,7 +81,7 @@ class InstallProgramDriver:
     #
     # 1) Set up the help text
     #
-      
+
     usageHelp = scriptName+\
 r""" [OPTIONS] [--install-dir=<install-dir> ...]
 
@@ -143,7 +143,7 @@ in order to remove the intermediate source and build files.
     addOptionParserChoiceOption(
       versionCmndArgName, "version", supportedVersions, defaultVersionIdx,
       "Version to install for "+productName+".", clp)
-    
+
     clp.add_option(
       "--install-dir", dest="installDir", type="string",
       default="/usr/local",
@@ -163,52 +163,52 @@ in order to remove the intermediate source and build files.
       "--parallel", dest="parallel", type="int", \
       default=0, \
       help="Uses parallelism in build if set to > 0." )
-    
+
     clp.add_option(
       "--make-options", dest="makeOptions", type="string",
       default="",
       help="The options to pass to make for "+productName+"." )
 
     self.installObj.injectExtraCmndLineOptions(clp, self.productVersion)
-    
+
     clp.add_option(
       "--show-defaults", dest="showDefaults", action="store_true", default=False,
       help="[ACTION] Show the defaults and exit." )
-    
+
     clp.add_option(
       "--download", dest="download", action="store_true", default=False,
       help="[ACTION] Do the download of the tarball" )
-    
+
     clp.add_option(
       "--untar", dest="untar", action="store_true", default=False,
       help="[ACTION] Do the untar of the "+productName+" sources" )
-    
+
     clp.add_option(
       "--configure", dest="configure", action="store_true", default=False,
       help="[ACTION] Configure "+productName+" to build" )
-    
+
     clp.add_option(
       "--build", dest="build", action="store_true", default=False,
       help="[Action] Build "+productName+" and related executables" )
-    
+
     clp.add_option(
       "--install", dest="install", action="store_true", default=False,
       help="[ACTION] Install "+productName )
 
     clp.add_option(
       "--generate-env-module", dest="writeModuleFile", action="store_true",
-      default=False, help="[ACTION] Generate Environment Module for "+productName )    
+      default=False, help="[ACTION] Generate Environment Module for "+productName )
 
     clp.add_option(
       "--show-final-instructions", dest="showFinalInstructions", action="store_true",
       default=False,
       help="[ACTION] Show final instructions for using "+productName )
-    
+
     clp.add_option(
       "--do-all", dest="doAll", action="store_true", default=False,
       help="[AGGR ACTION] Same as --download --untar --configure --build --install" \
       +" --show-final-instructions")
-    
+
     (options, args) = clp.parse_args()
     if not options.moduleDir:
       options.moduleDir = options.installDir
@@ -266,9 +266,9 @@ in order to remove the intermediate source and build files.
       options.install = True
       options.writeModuleFile = True
       options.showFinalInstructions = True
-    
+
     baseDir = os.getcwd()
-    
+
     productBaseDir = baseDir+"/"+baseDirName
 
     self.installObj.setup(options)
@@ -276,7 +276,7 @@ in order to remove the intermediate source and build files.
     print("")
     print("A) Download the source for "+productName+" ...")
     print("")
-    
+
     if options.download:
       try:
         self.installObj.doDownload()
@@ -285,67 +285,67 @@ in order to remove the intermediate source and build files.
         exit(1)
     else:
       print("Skipping on request ...")
-    
+
     print("")
     print("B) Untar the tarball(s) and set up ready to configure ...")
     print("")
-    
+
     if options.untar:
       self.installObj.doUntar()
     else:
       print("Skipping on request ...")
-    
-    
+
+
     print("")
     print("C) Configure "+productName+" ...")
     print("")
-    
-    
+
+
     if options.configure:
       self.installObj.doConfigure()
     else:
       print("Skipping on request ...")
-    
-    
+
+
     print("")
     print("D) Build "+productName+" ...")
     print("")
-    
+
     if options.build:
       self.installObj.doBuild()
     else:
       print("Skipping on request ...")
-    
-    
+
+
     print("")
     print("E) Install "+productName+" ...")
     print("")
-    
+
     if options.install:
       self.installObj.doInstall()
       fixupInstallPermissions(options, options.installDir)
     else:
       print("Skipping on request ...")
-    
+
     print("")
     print("F) Write module file "+productName+" ...")
     print("")
 
     if options.writeModuleFile:
-      print("Writing module file: "+options.moduleDir+"/\n")
+      print("Writing module file: "+options.moduleDir+"/"+productName+"\n")
       self.installObj.writeModuleFile()
     else:
       print("Skipping on request ...")
-    
+
     print("")
     print("G) Final instructions for using "+productName+" ...")
     print("")
-    
+
     if options.showFinalInstructions:
       print(self.installObj.getFinalInstructions())
     else:
       print("Skipping on request ...")
-    
+
     print("\n[End]")
 
 
@@ -380,12 +380,12 @@ def getParallelOpt(inOptions, optName):
 #
 
 def insertInstallPermissionsOptions(clp):
-  
+
   clp.add_option(
     "--install-owner", dest="installOwner", type="string", default="",
     help="If set, then 'chown -R <install-owner> <install-dir>' will be run after install." \
       "  Note that you can only change the owner when running this script as sudo." )
-  
+
   clp.add_option(
     "--install-group", dest="installGroup", type="string", default="",
     help="If set, then 'chgrp -R <install-group> <install-dir>' and " \
